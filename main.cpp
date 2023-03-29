@@ -1,3 +1,4 @@
+//text
 #include "demodialog.h"
 
 #include <QApplication>
