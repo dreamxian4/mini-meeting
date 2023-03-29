@@ -1,6 +1,7 @@
 #include "demodialog.h"
 #include "ui_demodialog.h"
-#include<qDebug>
+#include<QMessageBox>
+
 
 DemoDialog::DemoDialog(QWidget *parent)
     : QDialog(parent)
@@ -8,15 +9,7 @@ DemoDialog::DemoDialog(QWidget *parent)
 {
     ui->setupUi(this);
 
-    m_server=new TcpServerMediator;
-    m_server->OpenNet("0.0.0.0",8080);
-    connect(m_server,SIGNAL(SIG_ReadyData( unsigned int, char*, int)),
-            this,SLOT(slot_serverReadData( unsigned int, char*, int)));
 
-    m_client=new TcpClientMediator;
-    m_client->OpenNet("10.51.220.155",8080);
-    connect(m_client,SIGNAL(SIG_ReadyData( unsigned int, char*, int)),
-            this,SLOT(slot_clientReadData( unsigned int, char*, int)));
 }
 
 DemoDialog::~DemoDialog()
@@ -24,34 +17,13 @@ DemoDialog::~DemoDialog()
     delete ui;
 }
 
-#include<QMessageBox>
-void DemoDialog::slot_serverReadData(unsigned int socket, char *buf, int nlen)
+void DemoDialog::closeEvent(QCloseEvent * event)
 {
-    std::string st=buf;
-    QString str=QString::fromStdString(st);
-    str="来自client:"+str;
-    QMessageBox::about(this,"提示",str);
-    m_server->SendData(socket,buf,nlen);
-    delete []buf;
+    if(QMessageBox::question(this,"提示","是否关闭？")==QMessageBox::Yes){
+        //关闭
+        Q_EMIT SIG_close();
+    }else{
+        //忽略
+        event->ignore();
+    }
 }
-
-void DemoDialog::slot_clientReadData(unsigned int socket, char *buf, int nlen)
-{
-    std::string st=buf;
-    QString str=QString::fromStdString(st);
-    str="来自server:"+str;
-    QMessageBox::about(this,"提示",str);
-    delete []buf;
-}
-
-
-#include<QString>
-void DemoDialog::on_pushButton_clicked()
-{
-    QString str=ui->lineEdit->text();
-    //QMessageBox::about(this,"提示",str);
-    std::string strstd=str.toStdString();
-    char* strbuf=(char*)strstd.c_str();
-    m_client->SendData(0,strbuf,strlen(strbuf)+1);
-}
-

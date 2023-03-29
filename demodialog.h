@@ -4,6 +4,7 @@
 #include <QDialog>
 #include"TcpClientMediator.h"
 #include"TcpServerMediator.h"
+#include<QCloseEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class DemoDialog; }
@@ -17,16 +18,13 @@ public:
     DemoDialog(QWidget *parent = nullptr);
     ~DemoDialog();
 
-public slots:
-    void slot_serverReadData( unsigned int socket, char* buf, int nlen);
-    void slot_clientReadData( unsigned int socket, char* buf, int nlen);
-
-private slots:
-    void on_pushButton_clicked();
+signals:
+    void SIG_close();
+public:
+    void closeEvent(QCloseEvent * event);
 
 private:
     Ui::DemoDialog *ui;
-    INetMediator *m_server;
-    INetMediator *m_client;
+
 };
 #endif // DEMODIALOG_H
