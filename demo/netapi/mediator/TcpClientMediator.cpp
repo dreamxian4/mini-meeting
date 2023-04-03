@@ -32,7 +32,6 @@ void TcpClientMediator::CloseNet()
 //发送 : 同时兼容tcp udp 
 bool TcpClientMediator::SendData( unsigned int lSendIP , char* buf , int nlen )
 {
-    qDebug()<<"发送成功！";
     Q_UNUSED(lSendIP);
     if( IsConnected() )
         return m_pNet->SendData( 0 , buf, nlen);
@@ -55,7 +54,6 @@ bool TcpClientMediator::SendData( unsigned int lSendIP , char* buf , int nlen )
 //处理 
 void TcpClientMediator::DealData(unsigned int lSendIP , char* buf , int nlen )
 {
-    qDebug()<<"处理";
 	//将这几个参数 以信号的形式发送出去  -- IKernel类 的槽函数处理 -- 注意空间回收
     //std::cout<< lSendIP << ":" << buf <<std::endl;
     Q_EMIT SIG_ReadyData( lSendIP , buf , nlen);

@@ -3,6 +3,8 @@
 #include<QSettings>
 #include<QApplication>
 #include<QFileInfo>
+#include<string>
+using namespace std;
 
 #define netMap(a) m_netMap[a-_DEF_PROTOCOL_BASE]
 
@@ -11,25 +13,30 @@ CKernel::CKernel(QObject *parent) : QObject(parent)
     initConfig();
     setNetMap();
     m_login=new LoginDialog;
+
     m_login->show();
+    //连接关闭信号和销毁槽
     connect(m_login,SIGNAL(SIG_close()),
             this,SLOT(slot_destroy()));
+    connect(m_login,SIGNAL(SIG_loginCommit(QString,QString)),
+            this,SLOT(slot_loginCommit(QString,QString)));
+    connect(m_login,SIGNAL(SIG_registerCommit(QString,QString)),
+            this,SLOT(slot_registerCommit(QString,QString)));
+
 
     m_main=new DemoDialog;
+    //连接关闭信号和销毁槽
     connect(m_main,SIGNAL(SIG_close()),
             this,SLOT(slot_destroy()));
-    m_client=new TcpClientMediator;
-    m_client->OpenNet(m_serverIp.toStdString().c_str(),8080);
-//    m_client->OpenNet(_DEF_SERVER_IP,8080);
-//    m_client->OpenNet("192.168.244.135",8080);
-    connect(m_client,SIGNAL(SIG_ReadyData(unsigned int,char*,int)),
-            this,SLOT(slot_ReadyData(unsigned int,char*,int)));
 
-    //测试 登录验证与服务器的连接
-    STRU_LOGIN_RQ rq;
-    strcpy(rq.tel,"123");
-    strcpy(rq.password,"123");
-    m_client->SendData(0,(char*)&rq,sizeof(rq));
+
+    m_client=new TcpClientMediator;
+    //打开网络
+    m_client->OpenNet(m_serverIp.toStdString().c_str(),8080);
+    //连接收到信息和处理槽
+    connect(m_client,SIGNAL(SIG_ReadyData(unsigned int,char*,int)),
+            this,SLOT(slot_DealData(unsigned int,char*,int)));
+
 }
 
 CKernel::~CKernel()
@@ -87,10 +94,17 @@ void CKernel::initConfig()
     qDebug()<<m_serverIp;
 }
 
-//处理数据
-void CKernel::slot_ReadyData(unsigned int socket, char *buf, int nlen)
+//设置协议
+void CKernel::setNetMap()
 {
-    QMessageBox::about(m_login,"提示","收到信息");
+    memset(m_netMap,0,sizeof(PFUN));
+    netMap(_DEF_PACK_LOGIN_RS)=&CKernel::slot_DealLoginRs;
+    netMap(_DEF_PACK_REGISTER_RS)=&CKernel::slot_DealRegisterRs;
+}
+
+//处理数据
+void CKernel::slot_DealData(unsigned int socket, char *buf, int nlen)
+{
     int type=*(int*)buf;
     if(type>=_DEF_PROTOCOL_BASE&&type<_DEF_PROTOCOL_BASE+_DEF_PROTOCOL_COUNT){
         PFUN p=netMap(type);
@@ -99,15 +113,53 @@ void CKernel::slot_ReadyData(unsigned int socket, char *buf, int nlen)
     delete []buf;
 }
 
-//设置协议
-void CKernel::setNetMap()
-{
-    memset(m_netMap,0,sizeof(PFUN));
-    netMap(_DEF_PACK_LOGIN_RS)=&CKernel::slot_DealLoginRs;
-}
-
-//处理登录请求回复
+//处理登录回复
 void CKernel::slot_DealLoginRs(unsigned int socket, char *buf, int nlen)
 {
     qDebug()<<__func__;
+}
+
+//处理注册回复
+void CKernel::slot_DealRegisterRs(unsigned int socket, char *buf, int nlen)
+{
+    //拆包
+    STRU_REGISTER_RS* rs=(STRU_REGISTER_RS*)buf;
+    //根据结果，弹窗提示
+    switch(rs->result){
+    case tel_is_exist:
+        QMessageBox::about(m_login,"提示","用户已存在,注册失败QAQ");
+        break;
+    case register_success:
+        QMessageBox::about(m_login,"提示","注册成功^_^");
+        break;
+    }
+}
+
+
+//ui
+//登录提交
+void CKernel::slot_loginCommit(QString tel, QString passwd)
+{
+
+}
+
+//注册提交
+void CKernel::slot_registerCommit(QString tel, QString passwd)
+{
+    //提取手机号、密码
+    std::string strTel=tel.toStdString();
+    std::string strPass=passwd.toStdString();
+    //写入协议包，网络发送
+    STRU_REGISTER_RQ rq;//不能用指针
+    strcpy(rq.tel,strTel.c_str());
+    strcpy(rq.password,strPass.c_str());
+
+    //发送
+    SendData(0,(char*)&rq,sizeof(rq));
+}
+
+//发送数据
+bool CKernel::SendData(unsigned int lSendIP, char *buf, int nlen)
+{
+    return m_client->SendData(lSendIP,buf,nlen);
 }

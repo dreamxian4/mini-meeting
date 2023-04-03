@@ -32,12 +32,24 @@ public slots:
     void slot_destroy();
     //初始化配置
     void initConfig();
-    //网络数据处理
-    void slot_ReadyData(unsigned int socket,char* buf,int nlen);
     //设置协议
     void setNetMap();
-    //网络数据处理:登录请求回复
+
+    //网络槽
+    //网络数据处理
+    void slot_DealData(unsigned int socket,char* buf,int nlen);
+    //登录回复
     void slot_DealLoginRs(unsigned int socket,char* buf,int nlen);
+    //注册回复
+    void slot_DealRegisterRs(unsigned int socket,char* buf,int nlen);
+
+    //ui槽
+    //登录 注册提交
+    void slot_loginCommit(QString tel,QString passwd);
+    void slot_registerCommit(QString tel,QString passwd);
+
+    //发送数据包
+    bool SendData(unsigned int lSendIP , char* buf , int nlen);
 
 private:
     PFUN m_netMap[_DEF_PROTOCOL_COUNT];//协议映射表

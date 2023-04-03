@@ -28,9 +28,10 @@
 #define _DEF_PACK_OFFLINE_RQ	(_DEF_PROTOCOL_BASE + 9 )
 
 //返回的结果
-//注册请求的结果
-#define user_is_exist		(0)
+//注册请求结果
+#define tel_is_exist		(0)
 #define register_success	(1)
+#define name_is_exist       (2)
 //登录请求的结果
 #define user_not_exist		(0)
 #define password_error		(1)
@@ -50,13 +51,11 @@ typedef struct STRU_REGISTER_RQ
 	STRU_REGISTER_RQ():type(_DEF_PACK_REGISTER_RQ)
 	{
 		memset( tel  , 0, sizeof(tel));
-		memset( name  , 0, sizeof(name));
 		memset( password , 0, sizeof(password) );
 	}
 	//需要手机号码 , 密码, 昵称
 	PackType type;
 	char tel[_MAX_SIZE];
-	char name[_MAX_SIZE];
 	char password[_MAX_SIZE];
 
 }STRU_REGISTER_RQ;

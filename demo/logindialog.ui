@@ -10,6 +10,18 @@
     <height>239</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>584</width>
+    <height>239</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>584</width>
+    <height>239</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
@@ -96,7 +108,7 @@
       <string>手机号</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pb_login">
+    <widget class="QPushButton" name="pb_commit">
      <property name="geometry">
       <rect>
        <x>220</x>
@@ -106,7 +118,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>登录</string>
+      <string>提交</string>
      </property>
     </widget>
     <widget class="QLabel" name="lb_passwd">
@@ -223,7 +235,7 @@
       <enum>QLineEdit::Normal</enum>
      </property>
     </widget>
-    <widget class="QPushButton" name="pb_login_register">
+    <widget class="QPushButton" name="pb_commit_register">
      <property name="geometry">
       <rect>
        <x>220</x>
@@ -233,7 +245,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>登录</string>
+      <string>提交</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="le_confirm_passwd">
@@ -281,12 +293,12 @@
   <tabstop>tabWidget</tabstop>
   <tabstop>le_tel</tabstop>
   <tabstop>le_passwd</tabstop>
-  <tabstop>pb_login</tabstop>
+  <tabstop>pb_commit</tabstop>
   <tabstop>pb_clear</tabstop>
   <tabstop>le_tel_register</tabstop>
   <tabstop>le_passwd_register</tabstop>
   <tabstop>le_confirm_passwd</tabstop>
-  <tabstop>pb_login_register</tabstop>
+  <tabstop>pb_commit_register</tabstop>
   <tabstop>pb_clear_register</tabstop>
  </tabstops>
  <resources>
