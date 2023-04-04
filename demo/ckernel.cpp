@@ -4,11 +4,25 @@
 #include<QApplication>
 #include<QFileInfo>
 #include<string>
+#include"md5.h"
 using namespace std;
 
 #define netMap(a) m_netMap[a-_DEF_PROTOCOL_BASE]
+#define MD5_KEY 1234
 
-CKernel::CKernel(QObject *parent) : QObject(parent)
+/// 拼凑规则：
+/// passwd_1234
+/// \brief GetMD5
+/// \param str
+/// \return
+
+static std::string GetMD5(QString str){
+    std::string tmp=QString("%1_%2").arg(str).arg(MD5_KEY).toStdString();
+    MD5 md5(tmp);
+    return md5.toString();
+}
+
+CKernel::CKernel(QObject *parent) : QObject(parent),m_userid(0)
 {
     initConfig();
     setNetMap();
@@ -102,6 +116,7 @@ void CKernel::setNetMap()
     netMap(_DEF_PACK_REGISTER_RS)=&CKernel::slot_DealRegisterRs;
 }
 
+//网络数据
 //处理数据
 void CKernel::slot_DealData(unsigned int socket, char *buf, int nlen)
 {
@@ -116,7 +131,23 @@ void CKernel::slot_DealData(unsigned int socket, char *buf, int nlen)
 //处理登录回复
 void CKernel::slot_DealLoginRs(unsigned int socket, char *buf, int nlen)
 {
-    qDebug()<<__func__;
+    //拆包
+    STRU_LOGIN_RS* rs=(STRU_LOGIN_RS*)buf;
+    //根据结果，弹窗提示
+    switch(rs->result){
+    case user_not_exist:
+        QMessageBox::about(m_login,"提示","用户不存在T.T");
+        break;
+    case password_error:
+        QMessageBox::about(m_login,"提示","密码错误@_@");
+        break;
+    case login_success:
+        qDebug()<<"登录成功";
+        m_userid=rs->userid;
+        m_login->hide();
+        m_main->showNormal();
+        break;
+    }
 }
 
 //处理注册回复
@@ -140,7 +171,17 @@ void CKernel::slot_DealRegisterRs(unsigned int socket, char *buf, int nlen)
 //登录提交
 void CKernel::slot_loginCommit(QString tel, QString passwd)
 {
+    //提取手机号、密码
+    std::string strTel=tel.toStdString();
+    std::string strPass=GetMD5(passwd);
 
+    //写入协议包，网络发送
+    STRU_LOGIN_RQ rq;//不能用指针
+    strcpy(rq.tel,strTel.c_str());
+    strcpy(rq.password,strPass.c_str());
+    qDebug()<<strPass.c_str();
+    //发送
+    SendData(0,(char*)&rq,sizeof(rq));
 }
 
 //注册提交
@@ -148,12 +189,12 @@ void CKernel::slot_registerCommit(QString tel, QString passwd)
 {
     //提取手机号、密码
     std::string strTel=tel.toStdString();
-    std::string strPass=passwd.toStdString();
+    std::string strPass=GetMD5(passwd);
     //写入协议包，网络发送
     STRU_REGISTER_RQ rq;//不能用指针
     strcpy(rq.tel,strTel.c_str());
     strcpy(rq.password,strPass.c_str());
-
+    qDebug()<<strPass.c_str();
     //发送
     SendData(0,(char*)&rq,sizeof(rq));
 }

@@ -29,7 +29,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 include(./netapi/netapi.pri)
-INCLUDEPATH += ./netapi/
+include(./MD5/MD5.pri)
+INCLUDEPATH += ./netapi/\
+            ./MD5/
+
 
 RESOURCES += \
     resources.qrc

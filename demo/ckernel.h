@@ -57,6 +57,7 @@ private:
     LoginDialog* m_login;//登录窗口
     TcpClientMediator* m_client;//客户端
     QString m_serverIp;//服务端ip地址
+    int m_userid;//用户id
 };
 
 

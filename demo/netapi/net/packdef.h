@@ -93,8 +93,8 @@ typedef struct STRU_LOGIN_RS
 	{
 	}
 	PackType type;
+    int userid;
 	int result;
-	int userid;
 
 }STRU_LOGIN_RS;
 
