@@ -140,12 +140,10 @@ typedef struct STRU_LOGIN_RS
         m_nType= DEF_PACK_LOGIN_RS;
         m_userid = 0;
         m_lResult = 0;
-        memset( m_name , 0 , MAX_SIZE );
     }
     PackType m_nType;   //包类型
     int  m_userid;
     int  m_lResult ; //注册结果
-    char m_name[MAX_SIZE];  //用户名
 
 } STRU_LOGIN_RS;
 
@@ -281,16 +279,17 @@ typedef struct UserInfo
          m_id = 0;
          m_roomid = 0;
          memset(m_userName, 0 , MAX_SIZE);
-        m_videofd = 0;
-        m_audiofd = 0;
+//        m_videofd = 0;
+//        m_audiofd = 0;
     }
-    struct bufferevent*  m_sockfd;
+//    struct bufferevent*  m_sockfd;
+    int m_sockfd;
     int  m_id;
-    int  m_roomid;
+    int  m_roomid;//方便下线的时候从房间移出
     char m_userName[MAX_SIZE];
 
-    int  m_videofd;
-    int  m_audiofd;
+//    int  m_videofd;
+//    int  m_audiofd;
 
 }UserInfo;
 
