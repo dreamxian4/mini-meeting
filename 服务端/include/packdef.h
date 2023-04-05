@@ -77,6 +77,8 @@
 #define DEF_PACK_AUDIO_REGISTER (DEF_PACK_BASE + 13)
 //视频注册
 #define DEF_PACK_VIDEO_REGISTER (DEF_PACK_BASE + 14)
+//用户信息 用于设置和登录时获取状态
+#define DEF_PACK_USER_INFO      (DEF_PACK_BASE + 15)
 
 //注册请求结果
 #define tel_is_exist		(0)
@@ -269,6 +271,23 @@ typedef struct STRU_LEAVEROOM_RQ
     char   szUserName[MAX_SIZE];
 }STRU_LEAVEROOM_RQ;
 
+//用户信息
+typedef struct STRU_USER_INFO
+{
+    STRU_USER_INFO()
+    {
+        type=DEF_PACK_USER_INFO;
+        userid=0;
+        iconid=0;
+        memset( name ,  0 , sizeof(name) );
+    }
+    //需要 用户id 头像id 昵称 签名 状态--是否在线
+    PackType type;
+    int userid;
+    int iconid;
+    char name[MAX_SIZE];
+
+}STRU_USER_INFO;
 
 // id -> userInfo
 typedef struct UserInfo

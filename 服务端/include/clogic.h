@@ -25,6 +25,10 @@ public:
     void RegisterRq(sock_fd clientfd, char*szbuf, int nlen);
     //登录
     void LoginRq(sock_fd clientfd, char*szbuf, int nlen);
+    //创建房间
+    void CreateRoomRq(sock_fd clientfd, char*szbuf, int nlen);
+    //加入房间
+    void JoinRoomRq(sock_fd clientfd, char*szbuf, int nlen);
 
     /*******************************************/
 
@@ -33,8 +37,10 @@ private:
     CMysql * m_sql;
     Block_Epoll_Net * m_tcp;
 
-    //加映射关系
+    //加映射关系 id-userinfo
     MyMap<int,UserInfo*>m_mapIdToUserInfo;
+    //room-member
+    MyMap<int,list<int>>m_mapRoomIDToUserList;
 };
 
 #endif // CLOGIC_H

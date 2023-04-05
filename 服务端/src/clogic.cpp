@@ -5,6 +5,8 @@ void CLogic::setNetPackMap()
 {
     NetPackMap(DEF_PACK_REGISTER_RQ)    = &CLogic::RegisterRq;
     NetPackMap(DEF_PACK_LOGIN_RQ)       = &CLogic::LoginRq;
+    NetPackMap(DEF_PACK_CREATEROOM_RQ)  = &CLogic::CreateRoomRq;
+    NetPackMap(DEF_PACK_JOINROOM_RQ)    = &CLogic::JoinRoomRq;
 }
 
 //注册
@@ -90,4 +92,31 @@ void CLogic::LoginRq(sock_fd clientfd ,char* szbuf,int nlen)
     }
 
     SendData( clientfd , (char*)&rs , sizeof rs );
+}
+
+//创建房间
+void CLogic::CreateRoomRq(sock_fd clientfd, char *szbuf, int nlen)
+{
+    printf("clientfd:%d CreateRoomRq\n", clientfd);
+    STRU_CREATEROOM_RQ* rq=(STRU_CREATEROOM_RQ*)szbuf;
+    int roomid=0;
+    do{
+        roomid=random()%899999+100000;
+    }while(m_mapRoomIDToUserList.IsExist(roomid));
+    printf("roomid:%d\n",roomid);
+    list<int>lst;
+    lst.push_back(rq->m_UserID);
+    m_mapRoomIDToUserList.insert(roomid,lst);
+
+    //回复
+    STRU_CREATEROOM_RS rs;
+    rs.m_RoomId=roomid;
+    rs.m_lResult=1;
+    SendData(clientfd,(char*)&rs,sizeof(rs));
+}
+
+//加入房间
+void CLogic::JoinRoomRq(sock_fd clientfd, char *szbuf, int nlen)
+{
+
 }
