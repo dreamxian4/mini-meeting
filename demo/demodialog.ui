@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>DemoDialog</string>
   </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>0</number>
@@ -30,7 +33,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QWidget" name="widget" native="true">
+    <widget class="QWidget" name="wdg_content" native="true">
      <property name="font">
       <font>
        <family>微软雅黑</family>
@@ -54,7 +57,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QWidget" name="widget_2" native="true">
+       <widget class="QWidget" name="wdg_title" native="true">
         <property name="minimumSize">
          <size>
           <width>100</width>
@@ -69,7 +72,7 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="lb_titlr_icon">
            <property name="minimumSize">
             <size>
              <width>30</width>
@@ -94,7 +97,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_2">
+          <widget class="QLabel" name="lb_title">
            <property name="minimumSize">
             <size>
              <width>68</width>
@@ -126,7 +129,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton">
+          <widget class="QPushButton" name="pb_min">
            <property name="minimumSize">
             <size>
              <width>30</width>
@@ -136,7 +139,7 @@
            <property name="maximumSize">
             <size>
              <width>30</width>
-             <height>30</height>
+             <height>40</height>
             </size>
            </property>
            <property name="text">
@@ -148,7 +151,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_2">
+          <widget class="QPushButton" name="pb_close">
            <property name="minimumSize">
             <size>
              <width>30</width>
@@ -173,7 +176,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget_3" native="true">
+       <widget class="QWidget" name="wdg_user" native="true">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -188,7 +191,7 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
-          <widget class="QPushButton" name="pushButton_3">
+          <widget class="QPushButton" name="pb_icon">
            <property name="minimumSize">
             <size>
              <width>51</width>
@@ -217,7 +220,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_3">
+          <widget class="QLabel" name="lb_name">
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -243,7 +246,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_4">
+          <widget class="QPushButton" name="pb_setup">
            <property name="minimumSize">
             <size>
              <width>30</width>
@@ -257,7 +260,17 @@
             </size>
            </property>
            <property name="text">
-            <string>S</string>
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="resources.qrc">
+             <normaloff>:/images/sett.png</normaloff>:/images/sett.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
            </property>
            <property name="flat">
             <bool>true</bool>
@@ -268,7 +281,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget_5" native="true">
+       <widget class="QWidget" name="wdg_room" native="true">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -283,7 +296,7 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <widget class="QPushButton" name="pushButton_8">
+          <widget class="QPushButton" name="pb_join">
            <property name="minimumSize">
             <size>
              <width>40</width>
@@ -302,7 +315,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_7">
+          <widget class="QPushButton" name="pb_create">
            <property name="minimumSize">
             <size>
              <width>40</width>
@@ -321,7 +334,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_6">
+          <widget class="QPushButton" name="pb_history">
            <property name="minimumSize">
             <size>
              <width>40</width>
@@ -343,7 +356,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget_4" native="true">
+       <widget class="QWidget" name="wdg_bottom" native="true">
         <property name="minimumSize">
          <size>
           <width>0</width>

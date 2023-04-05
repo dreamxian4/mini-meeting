@@ -4,10 +4,12 @@
 #include<QApplication>
 #include<QFileInfo>
 #include<string>
+#include<QInputDialog>
 #include"md5.h"
+
 using namespace std;
 
-#define netMap(a) m_netMap[a-_DEF_PROTOCOL_BASE]
+#define netMap(a) m_netMap[a-_DEF_PACK_BASE]
 #define MD5_KEY 1234
 
 /// 拼凑规则：
@@ -22,10 +24,22 @@ static std::string GetMD5(QString str){
     return md5.toString();
 }
 
-CKernel::CKernel(QObject *parent) : QObject(parent),m_userid(0)
+CKernel::CKernel(QObject *parent) : QObject(parent),m_userid(0),m_roomid(0)
 {
     initConfig();
     setNetMap();
+
+    m_client=new TcpClientMediator;
+    //打开网络
+    if(!m_client->OpenNet(m_serverIp.toStdString().c_str(),8080)){
+        QMessageBox::about(this->m_login,"提示","服务器连接失败~~~");
+        exit(0);
+    }
+    //连接收到信息和处理槽
+    connect(m_client,SIGNAL(SIG_ReadyData(unsigned int,char*,int)),
+            this,SLOT(slot_DealData(unsigned int,char*,int)));
+
+
     m_login=new LoginDialog;
 
     m_login->show();
@@ -38,19 +52,18 @@ CKernel::CKernel(QObject *parent) : QObject(parent),m_userid(0)
             this,SLOT(slot_registerCommit(QString,QString)));
 
 
+
     m_main=new DemoDialog;
     //连接关闭信号和销毁槽
     connect(m_main,SIGNAL(SIG_close()),
             this,SLOT(slot_destroy()));
+    connect(m_main,SIGNAL(SIG_joinRoom()),
+            this,SLOT(slot_joinRoom()));
+    connect(m_main,SIGNAL(SIG_createRoom()),
+            this,SLOT(slot_createRoom()));
 
 
-    m_client=new TcpClientMediator;
-    //打开网络
-    m_client->OpenNet(m_serverIp.toStdString().c_str(),8080);
-    //连接收到信息和处理槽
-    connect(m_client,SIGNAL(SIG_ReadyData(unsigned int,char*,int)),
-            this,SLOT(slot_DealData(unsigned int,char*,int)));
-
+    m_room=new RoomDialog;
 }
 
 CKernel::~CKernel()
@@ -74,6 +87,11 @@ void CKernel::slot_destroy()
         m_client->CloseNet();
         delete m_client;
         m_client=NULL;
+    }
+    if(m_room){
+        m_room->hide();
+        delete m_room;
+        m_room=NULL;
     }
 }
 
@@ -114,6 +132,8 @@ void CKernel::setNetMap()
     memset(m_netMap,0,sizeof(PFUN));
     netMap(_DEF_PACK_LOGIN_RS)=&CKernel::slot_DealLoginRs;
     netMap(_DEF_PACK_REGISTER_RS)=&CKernel::slot_DealRegisterRs;
+    netMap(DEF_PACK_CREATEROOM_RS)=&CKernel::slot_DealCreateRoomRs;
+    netMap(DEF_PACK_JOINROOM_RS)=&CKernel::slot_DealJoinRoomRs;
 }
 
 //网络数据
@@ -121,7 +141,7 @@ void CKernel::setNetMap()
 void CKernel::slot_DealData(unsigned int socket, char *buf, int nlen)
 {
     int type=*(int*)buf;
-    if(type>=_DEF_PROTOCOL_BASE&&type<_DEF_PROTOCOL_BASE+_DEF_PROTOCOL_COUNT){
+    if(type>=_DEF_PACK_BASE&&type<_DEF_PACK_BASE+_DEF_PROTOCOL_COUNT){
         PFUN p=netMap(type);
         if(p) (this->*p)(socket,buf,nlen);
     }
@@ -166,6 +186,36 @@ void CKernel::slot_DealRegisterRs(unsigned int socket, char *buf, int nlen)
     }
 }
 
+//处理创建房间回复
+void CKernel::slot_DealCreateRoomRs(unsigned int socket, char *buf, int nlen)
+{
+    //一定成功
+    STRU_CREATEROOM_RS* rs=(STRU_CREATEROOM_RS*)buf;
+    m_roomid=rs->m_RoomId;
+    qDebug()<<m_roomid;
+    m_main->hide();
+    m_room->showNormal();
+
+    //初始化状态 清空等操作 可复用
+}
+
+//处理加入房间回复
+void CKernel::slot_DealJoinRoomRs(unsigned int socket, char *buf, int nlen)
+{
+    //一定成功
+    STRU_JOINROOM_RS* rs=(STRU_JOINROOM_RS*)buf;
+    if(rs->m_lResult!=join_success){
+        QMessageBox::about(this->m_main,"提示","加入房间失败，房间不存在");
+        return;
+    }
+
+    m_roomid=rs->m_RoomID;
+    m_main->hide();
+    m_room->showNormal();
+
+    //初始化状态 清空等操作 可复用
+}
+
 
 //ui
 //登录提交
@@ -196,6 +246,39 @@ void CKernel::slot_registerCommit(QString tel, QString passwd)
     strcpy(rq.password,strPass.c_str());
     qDebug()<<strPass.c_str();
     //发送
+    SendData(0,(char*)&rq,sizeof(rq));
+}
+
+
+//加入房间
+void CKernel::slot_joinRoom()
+{
+    if(m_roomid!=0){
+        QMessageBox::about(this->m_main,"提示","已在房间中，加入失败");
+        return;
+    }
+    //加入什么房间
+    int roomid=QInputDialog::getInt(this->m_main,"加入房间","房间号：");
+    //格式：房间号100000-999999 6位房间号
+    if(roomid!=0&&roomid<=100000||roomid>999999){
+        QMessageBox::about(this->m_main,"提示","房间不存在");
+        return;
+    }
+    //发送请求
+    STRU_JOINROOM_RQ rq;
+    rq.m_RoomID=roomid;
+    rq.m_UserID=m_userid;
+
+    SendData(0,(char*)&rq,sizeof(rq));
+}
+
+//创建房间
+void CKernel::slot_createRoom()
+{
+    //发送请求
+    STRU_CREATEROOM_RQ rq;
+    rq.m_UserID=m_userid;
+
     SendData(0,(char*)&rq,sizeof(rq));
 }
 

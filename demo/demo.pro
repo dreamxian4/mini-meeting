@@ -12,16 +12,19 @@ SOURCES += \
     ckernel.cpp \
     logindialog.cpp \
     main.cpp \
-    demodialog.cpp
+    demodialog.cpp \
+    roomdialog.cpp
 
 HEADERS += \
     ckernel.h \
     demodialog.h \
-    logindialog.h
+    logindialog.h \
+    roomdialog.h
 
 FORMS += \
     demodialog.ui \
-    logindialog.ui
+    logindialog.ui \
+    roomdialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -30,8 +33,11 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 include(./netapi/netapi.pri)
 include(./MD5/MD5.pri)
+include(./uiapi/uiapi.pri)
+
 INCLUDEPATH += ./netapi/\
-            ./MD5/
+            ./MD5/\
+            ./uiapi
 
 
 RESOURCES += \

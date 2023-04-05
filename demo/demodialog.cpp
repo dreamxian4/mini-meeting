@@ -4,12 +4,12 @@
 
 
 DemoDialog::DemoDialog(QWidget *parent)
-    : QDialog(parent)
+    : CustomMoveDialog(parent)
     , ui(new Ui::DemoDialog)
 {
     ui->setupUi(this);
 
-
+    this->setWindowFlags(Qt::FramelessWindowHint);
 }
 
 DemoDialog::~DemoDialog()
@@ -27,3 +27,39 @@ void DemoDialog::closeEvent(QCloseEvent * event)
         event->ignore();
     }
 }
+
+//最小化
+void DemoDialog::on_pb_min_clicked()
+{
+    this->showMinimized();
+}
+
+//关闭窗口
+void DemoDialog::on_pb_close_clicked()
+{
+    this->close();
+}
+
+//加入会议
+void DemoDialog::on_pb_join_clicked()
+{
+    Q_EMIT SIG_joinRoom();
+}
+
+//创建会议
+void DemoDialog::on_pb_create_clicked()
+{
+    Q_EMIT SIG_createRoom();
+}
+
+//设置属性 成员+ui
+void DemoDialog::slot_setInfo(int id, QString name)
+{
+    //成员
+    m_name=name;
+    m_iconid=id;
+    //ui
+    ui->lb_name->setText(m_name);
+    ui->pb_icon->setIcon(QIcon(QString(":/tx/%1.png").arg(id)));
+}
+
