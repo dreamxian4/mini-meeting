@@ -118,5 +118,47 @@ void CLogic::CreateRoomRq(sock_fd clientfd, char *szbuf, int nlen)
 //加入房间
 void CLogic::JoinRoomRq(sock_fd clientfd, char *szbuf, int nlen)
 {
+    printf("clientfd:%d JoinRoomRq\n", clientfd);
+    //拆包
+    STRU_JOINROOM_RQ* rq=(STRU_JOINROOM_RQ*)szbuf;
+    STRU_JOINROOM_RS rs;
+    //判断房间是否存在
+    list<int>lst;
+    rs.m_RoomID=rq->m_RoomID;
+    if(!m_mapRoomIDToUserList.find(rq->m_RoomID,lst)){
+        //不存在，返回结果
+        rs.m_lResult=room_no_exist;
+    }else{
+        //存在，返回结果
+        rs.m_lResult=join_success;
+    }
+    SendData(clientfd,(char*)&rs,sizeof(rs));
+    UserInfo* joinInfo=nullptr;
+    if(!m_mapIdToUserInfo.find(rq->m_UserID,joinInfo))return;
 
+    //加入人信息
+    STRU_ROOM_MEMBER_RQ joinrq;
+    joinrq.m_UserID=rq->m_UserID;
+    strcpy(joinrq.m_szUser,joinInfo->m_userName);
+    //获取房间列表 lst
+    //遍历房间成员列表拿到每个人信息
+    for(auto ite=lst.begin();ite!=lst.end();ite++){
+        int memid=*ite;
+        UserInfo* memInfo=nullptr;
+        if(!m_mapIdToUserInfo.find(memid,memInfo)){
+            continue;
+        }
+        //成员信息
+        STRU_ROOM_MEMBER_RQ memrq;
+        memrq.m_UserID=memid;
+        strcpy(memrq.m_szUser,memInfo->m_userName);
+        //加入者信息，发给房间每个人
+        SendData(memInfo->m_sockfd,(char*)&joinrq,sizeof(joinrq));
+        //房间成员信息发送给加入者
+        SendData(clientfd,(char*)&memrq,sizeof(memrq));
+    }
+    //加入者添加到房间成员列表
+    lst.push_back(joinrq.m_UserID);
+    //更新map节点
+    m_mapRoomIDToUserList.insert(rq->m_RoomID,lst);
 }
