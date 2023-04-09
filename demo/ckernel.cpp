@@ -134,6 +134,7 @@ void CKernel::setNetMap()
     netMap(_DEF_PACK_REGISTER_RS)=&CKernel::slot_DealRegisterRs;
     netMap(DEF_PACK_CREATEROOM_RS)=&CKernel::slot_DealCreateRoomRs;
     netMap(DEF_PACK_JOINROOM_RS)=&CKernel::slot_DealJoinRoomRs;
+    netMap(DEF_PACK_ROOM_MEMBER)=&CKernel::slot_DealroomMemberRq;
 }
 
 //网络数据
@@ -191,29 +192,44 @@ void CKernel::slot_DealCreateRoomRs(unsigned int socket, char *buf, int nlen)
 {
     //一定成功
     STRU_CREATEROOM_RS* rs=(STRU_CREATEROOM_RS*)buf;
-    m_roomid=rs->m_RoomId;
-    qDebug()<<m_roomid;
-    m_main->hide();
-    m_room->showNormal();
-
-    //初始化状态 清空等操作 可复用
+    slot_setJoinedRoom(rs->m_RoomId);
 }
 
 //处理加入房间回复
 void CKernel::slot_DealJoinRoomRs(unsigned int socket, char *buf, int nlen)
 {
-    //一定成功
     STRU_JOINROOM_RS* rs=(STRU_JOINROOM_RS*)buf;
     if(rs->m_lResult!=join_success){
         QMessageBox::about(this->m_main,"提示","加入房间失败，房间不存在");
         return;
     }
+    slot_setJoinedRoom(rs->m_RoomID);
+}
 
-    m_roomid=rs->m_RoomID;
+void CKernel::slot_DealroomMemberRq(unsigned int socket, char *buf, int nlen)
+{
+    //拆包
+    //查重
+    STRU_ROOM_MEMBER_RQ* rq=(STRU_ROOM_MEMBER_RQ*)buf;
+    UserShow* user=new UserShow;
+    user->slot_setInfo(rq->m_UserID,QString::fromStdString(rq->m_szUser));
+
+    m_room->slot_addUser(user);
+}
+
+
+void CKernel::slot_setJoinedRoom(int m_RoomID){
+    m_roomid=m_RoomID;
     m_main->hide();
     m_room->showNormal();
-
     //初始化状态 清空等操作 可复用
+    m_room->slot_setRoomID(m_roomid);
+
+    //添加自己到房间
+    UserShow* user=new UserShow;
+    user->slot_setInfo(m_userid,"自己");
+
+    m_room->slot_addUser(user);
 }
 
 

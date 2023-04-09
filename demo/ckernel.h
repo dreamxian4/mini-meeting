@@ -47,6 +47,11 @@ public slots:
     void slot_DealCreateRoomRs(unsigned int socket,char* buf,int nlen);
     //加入房间回复
     void slot_DealJoinRoomRs(unsigned int socket,char* buf,int nlen);
+    //房间成员请求
+    void slot_DealroomMemberRq(unsigned int socket,char* buf,int nlen);
+
+    //设置加入的房间
+    void slot_setJoinedRoom(int m_RoomID);
 
     //ui槽
     //登录 注册提交
@@ -68,6 +73,7 @@ private:
     QString m_serverIp;//服务端ip地址
     int m_userid;//用户id
     int m_roomid;//房间id
+    QString m_name;//用户名
 };
 
 

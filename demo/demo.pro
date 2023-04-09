@@ -13,18 +13,21 @@ SOURCES += \
     logindialog.cpp \
     main.cpp \
     demodialog.cpp \
-    roomdialog.cpp
+    roomdialog.cpp \
+    usershow.cpp
 
 HEADERS += \
     ckernel.h \
     demodialog.h \
     logindialog.h \
-    roomdialog.h
+    roomdialog.h \
+    usershow.h
 
 FORMS += \
     demodialog.ui \
     logindialog.ui \
-    roomdialog.ui
+    roomdialog.ui \
+    usershow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
