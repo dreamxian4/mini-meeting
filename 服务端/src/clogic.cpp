@@ -7,6 +7,33 @@ void CLogic::setNetPackMap()
     NetPackMap(DEF_PACK_LOGIN_RQ)       = &CLogic::LoginRq;
     NetPackMap(DEF_PACK_CREATEROOM_RQ)  = &CLogic::CreateRoomRq;
     NetPackMap(DEF_PACK_JOINROOM_RQ)    = &CLogic::JoinRoomRq;
+    NetPackMap(DEF_PACK_USER_INFO)      = &CLogic::UserInfoRq;
+}
+
+void CLogic::GetUserInfoAndSend(int id){
+    //获取信息
+    char sqlstr[1024]="";
+    sprintf(sqlstr,"select name,icon,feeling from t_user where id=%d",id);
+    list<string>lst;
+    m_sql->SelectMysql(sqlstr,3,lst);
+    if(lst.size()!=3)return;
+    string name=lst.front();
+    lst.pop_front();
+    string iconid=lst.front();
+    lst.pop_front();
+    string feeling=lst.front();
+    lst.pop_front();
+    //设置信息
+    UserInfo* user=nullptr;
+    if(!m_mapIdToUserInfo.find(id,user))return;
+    strcpy(user->m_userName,name.c_str());
+    //发送给客户端
+    STRU_USER_INFO_RQ rq;
+    rq.m_UserID=id;
+    rq.m_iconid=atoi(iconid.c_str());
+    strcpy(rq.m_szUser,name.c_str());
+    strcpy(rq.m_userFeeling,feeling.c_str());
+    SendData(user->m_sockfd,(char*)&rq,sizeof(rq));
 }
 
 //注册
@@ -80,6 +107,7 @@ void CLogic::LoginRq(sock_fd clientfd ,char* szbuf,int nlen)
 
             SendData( clientfd , (char*)&rs , sizeof rs );
             //同步这个人的状态信息，让登录者知道自己的info
+            GetUserInfoAndSend(id);
             //聊天软件-》好友列表，离线信息	多媒体-》媒体列表	微博-》推送信息
             return;
         }else{
@@ -161,4 +189,18 @@ void CLogic::JoinRoomRq(sock_fd clientfd, char *szbuf, int nlen)
     lst.push_back(joinrq.m_UserID);
     //更新map节点
     m_mapRoomIDToUserList.insert(rq->m_RoomID,lst);
+}
+
+//设置个人信息
+void CLogic::UserInfoRq(sock_fd clientfd, char *szbuf, int nlen)
+{
+    printf("clientfd:%d UserInfoRq\n", clientfd);
+    //拆包
+    STRU_USER_INFO_RQ* rq=(STRU_USER_INFO_RQ*)szbuf;
+    //mysql修改信息
+    char strsql[1024];
+    sprintf(strsql,"update t_user set icon=%d,name='%s',feeling='%s' where id=%d",
+            rq->m_iconid,rq->m_szUser,rq->m_userFeeling,rq->m_UserID);
+    m_sql->UpdataMysql(strsql);
+    GetUserInfoAndSend(rq->m_UserID);
 }

@@ -272,22 +272,22 @@ typedef struct STRU_LEAVEROOM_RQ
 }STRU_LEAVEROOM_RQ;
 
 //用户信息
-typedef struct STRU_USER_INFO
-{
-    STRU_USER_INFO()
-    {
-        type=DEF_PACK_USER_INFO;
-        userid=0;
-        iconid=0;
-        memset( name ,  0 , sizeof(name) );
-    }
-    //需要 用户id 头像id 昵称 签名 状态--是否在线
-    PackType type;
-    int userid;
-    int iconid;
-    char name[MAX_SIZE];
+//typedef struct STRU_USER_INFO
+//{
+//    STRU_USER_INFO()
+//    {
+//        type=DEF_PACK_USER_INFO;
+//        userid=0;
+//        iconid=0;
+//        memset( name ,  0 , sizeof(name) );
+//    }
+//    //需要 用户id 头像id 昵称 签名 状态--是否在线
+//    PackType type;
+//    int userid;
+//    int iconid;
+//    char name[MAX_SIZE];
 
-}STRU_USER_INFO;
+//}STRU_USER_INFO;
 
 // id -> userInfo
 typedef struct UserInfo
@@ -311,6 +311,26 @@ typedef struct UserInfo
 //    int  m_audiofd;
 
 }UserInfo;
+
+//用户信息请求，登录之后状态同步,设置用户信息
+typedef struct STRU_USER_INFO_RQ
+{
+    STRU_USER_INFO_RQ()
+    {
+        m_nType= DEF_PACK_USER_INFO;
+        m_UserID =0;
+        m_iconid=0;
+        memset(m_szUser,0,MAX_SIZE);
+        memset(m_userFeeling,0,MAX_SIZE);
+    }
+    PackType m_nType;   //包类型
+    int m_UserID;
+    int m_iconid;
+    char m_szUser[MAX_SIZE];
+    char m_userFeeling[MAX_SIZE];
+
+}STRU_USER_INFO_RQ;
+
 
 //注册音频
 struct STRU_AUDIO_REGISTER

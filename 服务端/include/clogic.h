@@ -20,6 +20,7 @@ public:
     {
         m_pKernel->SendData( clientfd ,szbuf , nlen );
     }
+    void GetUserInfoAndSend(int id);
     /************** 网络处理 *********************/
     //注册
     void RegisterRq(sock_fd clientfd, char*szbuf, int nlen);
@@ -29,6 +30,8 @@ public:
     void CreateRoomRq(sock_fd clientfd, char*szbuf, int nlen);
     //加入房间
     void JoinRoomRq(sock_fd clientfd, char*szbuf, int nlen);
+    //设置个人信息
+    void UserInfoRq(sock_fd clientfd, char*szbuf, int nlen);
 
     /*******************************************/
 
