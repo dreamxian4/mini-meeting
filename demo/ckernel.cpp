@@ -61,9 +61,15 @@ CKernel::CKernel(QObject *parent) : QObject(parent),m_userid(0),m_roomid(0)
             this,SLOT(slot_joinRoom()));
     connect(m_main,SIGNAL(SIG_createRoom()),
             this,SLOT(slot_createRoom()));
+    connect(m_main,SIGNAL(SIG_setUser()),
+            this,SLOT(slot_setUser()));
 
 
     m_room=new RoomDialog;
+
+    m_setUser=new SetUserDialog;
+    connect(m_setUser,SIGNAL(SIG_userSetCommit(int,QString,QString)),
+            this,SLOT(slot_userSetCommit(int,QString,QString)));
 }
 
 CKernel::~CKernel()
@@ -92,6 +98,11 @@ void CKernel::slot_destroy()
         m_room->hide();
         delete m_room;
         m_room=NULL;
+    }
+    if(m_setUser){
+        m_setUser->hide();
+        delete m_setUser;
+        m_setUser=NULL;
     }
 }
 
@@ -135,6 +146,7 @@ void CKernel::setNetMap()
     netMap(DEF_PACK_CREATEROOM_RS)=&CKernel::slot_DealCreateRoomRs;
     netMap(DEF_PACK_JOINROOM_RS)=&CKernel::slot_DealJoinRoomRs;
     netMap(DEF_PACK_ROOM_MEMBER)=&CKernel::slot_DealroomMemberRq;
+    netMap(DEF_PACK_USER_INFO)=&CKernel::slot_DealUserInfoRq;
 }
 
 //网络数据
@@ -206,6 +218,7 @@ void CKernel::slot_DealJoinRoomRs(unsigned int socket, char *buf, int nlen)
     slot_setJoinedRoom(rs->m_RoomID);
 }
 
+//处理房间成员请求
 void CKernel::slot_DealroomMemberRq(unsigned int socket, char *buf, int nlen)
 {
     //拆包
@@ -215,6 +228,19 @@ void CKernel::slot_DealroomMemberRq(unsigned int socket, char *buf, int nlen)
     user->slot_setInfo(rq->m_UserID,QString::fromStdString(rq->m_szUser));
 
     m_room->slot_addUser(user);
+}
+
+//个人信息
+void CKernel::slot_DealUserInfoRq(unsigned int socket, char *buf, int nlen)
+{
+    //拆包
+    STRU_USER_INFO_RQ* rq=(STRU_USER_INFO_RQ*)buf;
+    //更新ui
+    m_name=QString::fromStdString(rq->m_szUser);
+    m_main->slot_setInfo(rq->m_iconid,m_name);
+    //更新设置ui
+    m_setUser->slot_setInfo(rq->m_iconid,m_name,
+                            QString::fromStdString(rq->m_userFeeling));
 }
 
 
@@ -280,6 +306,7 @@ void CKernel::slot_joinRoom()
         QMessageBox::about(this->m_main,"提示","房间不存在");
         return;
     }
+    if(roomid==0)return;
     //发送请求
     STRU_JOINROOM_RQ rq;
     rq.m_RoomID=roomid;
@@ -296,6 +323,28 @@ void CKernel::slot_createRoom()
     rq.m_UserID=m_userid;
 
     SendData(0,(char*)&rq,sizeof(rq));
+}
+
+//设置个人信息:弹出框
+void CKernel::slot_setUser()
+{
+    m_setUser->show();
+}
+
+//设置个人信息：信息提交
+void CKernel::slot_userSetCommit(int iconid, QString name, QString feeling)
+{
+    //发包
+    //中文兼容：utf8
+    std::string strName=name.toStdString();
+    std::string strFeeling=feeling.toStdString();
+    STRU_USER_INFO_RQ rq;
+    rq.m_iconid=iconid;
+    rq.m_UserID=m_userid;
+    strcpy(rq.m_szUser,strName.c_str());
+    strcpy(rq.m_userFeeling,strFeeling.c_str());
+    SendData(0,(char*)&rq,sizeof(rq));
+    QMessageBox::about(m_main,"提示","个人信息设置成功！");
 }
 
 //发送数据

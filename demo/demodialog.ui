@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>DemoDialog</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(170, 170, 170);</string>
+  </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
@@ -110,6 +113,12 @@
              <height>21</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <family>幼圆</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>我的会议</string>
            </property>
@@ -142,6 +151,12 @@
              <height>40</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <family>幼圆</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>-</string>
            </property>
@@ -163,6 +178,12 @@
              <width>30</width>
              <height>30</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <family>幼圆</family>
+             <pointsize>10</pointsize>
+            </font>
            </property>
            <property name="text">
             <string>x</string>
@@ -227,6 +248,12 @@
              <height>51</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <family>幼圆</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
            <property name="text">
             <string>我的名字</string>
            </property>
@@ -285,70 +312,118 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>60</height>
+          <height>100</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>60</height>
+          <height>100</height>
          </size>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <widget class="QPushButton" name="pb_join">
+          <widget class="QToolButton" name="pb_join">
            <property name="minimumSize">
             <size>
              <width>40</width>
-             <height>41</height>
+             <height>80</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
              <width>100</width>
-             <height>41</height>
+             <height>80</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <family>幼圆</family>
+             <pointsize>10</pointsize>
+            </font>
            </property>
            <property name="text">
             <string>加入会议</string>
            </property>
+           <property name="icon">
+            <iconset resource="resources.qrc">
+             <normaloff>:/images/tuer.png</normaloff>:/images/tuer.png</iconset>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonTextUnderIcon</enum>
+           </property>
+           <property name="autoRaise">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pb_create">
+          <widget class="QToolButton" name="pb_create">
            <property name="minimumSize">
             <size>
              <width>40</width>
-             <height>41</height>
+             <height>80</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
              <width>100</width>
-             <height>41</height>
+             <height>80</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <family>幼圆</family>
+             <pointsize>10</pointsize>
+            </font>
            </property>
            <property name="text">
             <string>创建会议</string>
            </property>
+           <property name="icon">
+            <iconset resource="resources.qrc">
+             <normaloff>:/images/tuer.png</normaloff>:/images/tuer.png</iconset>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonTextUnderIcon</enum>
+           </property>
+           <property name="autoRaise">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pb_history">
+          <widget class="QToolButton" name="pb_history">
            <property name="minimumSize">
             <size>
              <width>40</width>
-             <height>41</height>
+             <height>80</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
              <width>100</width>
-             <height>41</height>
+             <height>80</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <family>幼圆</family>
+             <pointsize>10</pointsize>
+            </font>
            </property>
            <property name="text">
             <string>会议记录</string>
+           </property>
+           <property name="icon">
+            <iconset resource="resources.qrc">
+             <normaloff>:/images/tuer.png</normaloff>:/images/tuer.png</iconset>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonTextUnderIcon</enum>
+           </property>
+           <property name="autoRaise">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -360,8 +435,14 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>200</height>
+          <height>80</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>幼圆</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
        </widget>
       </item>

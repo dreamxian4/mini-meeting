@@ -115,19 +115,19 @@ typedef struct STRU_LOGIN_RS
 }STRU_LOGIN_RS;
 
 //用户信息
-typedef struct STRU_USER_INFO
-{
-    STRU_USER_INFO():type(DEF_PACK_USER_INFO) , userid(0) , iconid(0)
-	{
-		memset( name ,  0 , sizeof(name) );
-	}
-	//需要 用户id 头像id 昵称 签名 状态--是否在线
-	PackType type;
-	int userid;
-	int iconid;
-    char name[_MAX_SIZE];
+//typedef struct STRU_USER_INFO
+//{
+//    STRU_USER_INFO():type(DEF_PACK_USER_INFO) , userid(0) , iconid(0)
+//	{
+//		memset( name ,  0 , sizeof(name) );
+//	}
+//	//需要 用户id 头像id 昵称 签名 状态--是否在线
+//	PackType type;
+//	int userid;
+//	int iconid;
+//    char name[_MAX_SIZE];
 
-}STRU_USER_INFO;
+//}STRU_USER_INFO;
 
 //创建房间请求
 typedef struct STRU_CREATEROOM_RQ
@@ -188,7 +188,7 @@ typedef struct STRU_JOINROOM_RS
     int m_RoomID;
 }STRU_JOINROOM_RS;
 
-//房间成员请求
+//房间成员列表
 typedef struct STRU_ROOM_MEMBER_RQ
 {
     STRU_ROOM_MEMBER_RQ()
@@ -219,6 +219,25 @@ typedef struct STRU_LEAVEROOM_RQ
     int    m_RoomId;
     char   szUserName[_MAX_SIZE];
 }STRU_LEAVEROOM_RQ;
+
+//用户信息请求，登录之后状态同步,设置用户信息
+typedef struct STRU_USER_INFO_RQ
+{
+    STRU_USER_INFO_RQ()
+    {
+        m_nType= DEF_PACK_USER_INFO;
+        m_UserID =0;
+        m_iconid=0;
+        memset(m_szUser,0,_MAX_SIZE);
+        memset(m_userFeeling,0,_MAX_SIZE);
+    }
+    PackType m_nType;   //包类型
+    int m_UserID;
+    int m_iconid;
+    char m_szUser[_MAX_SIZE];
+    char m_userFeeling[_MAX_SIZE];
+
+}STRU_USER_INFO_RQ;
 
 // 数据库
 /*

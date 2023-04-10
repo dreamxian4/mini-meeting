@@ -8,6 +8,7 @@
 #include"TcpClientMediator.h"
 #include"packdef.h"
 #include"roomdialog.h"
+#include<setuserdialog.h>
 
 class CKernel;
 typedef void (CKernel::*PFUN)(unsigned int,char*,int);
@@ -49,6 +50,8 @@ public slots:
     void slot_DealJoinRoomRs(unsigned int socket,char* buf,int nlen);
     //房间成员请求
     void slot_DealroomMemberRq(unsigned int socket,char* buf,int nlen);
+    //个人信息请求
+    void slot_DealUserInfoRq(unsigned int socket,char* buf,int nlen);
 
     //设置加入的房间
     void slot_setJoinedRoom(int m_RoomID);
@@ -60,6 +63,10 @@ public slots:
     //加入、创建房间
     void slot_joinRoom();
     void slot_createRoom();
+    //设置个人信息
+    void slot_setUser();
+    //个人信息提交
+    void slot_userSetCommit(int iconid,QString name,QString feeling);
 
     //发送数据包
     bool SendData(unsigned int lSendIP , char* buf , int nlen);
@@ -69,6 +76,7 @@ private:
     DemoDialog* m_main;//主窗口
     LoginDialog* m_login;//登录窗口
     RoomDialog* m_room;//房间窗口
+    SetUserDialog* m_setUser;//个人信息窗口
     TcpClientMediator* m_client;//客户端
     QString m_serverIp;//服务端ip地址
     int m_userid;//用户id

@@ -24,6 +24,8 @@ signals:
     void SIG_close();
     void SIG_createRoom();
     void SIG_joinRoom();
+    void SIG_setUser();
+
 public:
     void closeEvent(QCloseEvent * event);
 
@@ -36,7 +38,10 @@ private slots:
 
     void on_pb_create_clicked();
 
-    void slot_setInfo(int id,QString name);
+    void on_pb_icon_clicked();
+
+public slots:
+        void slot_setInfo(int id,QString name);
 
 private:
     Ui::DemoDialog *ui;

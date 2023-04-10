@@ -1,6 +1,7 @@
 #include "demodialog.h"
 #include "ui_demodialog.h"
 #include<QMessageBox>
+#include<QDebug>
 
 
 DemoDialog::DemoDialog(QWidget *parent)
@@ -61,5 +62,13 @@ void DemoDialog::slot_setInfo(int id, QString name)
     //ui
     ui->lb_name->setText(m_name);
     ui->pb_icon->setIcon(QIcon(QString(":/tx/%1.png").arg(id)));
+}
+
+
+//设置个人信息
+void DemoDialog::on_pb_icon_clicked()
+{
+    //发送信号
+    Q_EMIT SIG_setUser();
 }
 
