@@ -10,16 +10,21 @@ CONFIG += c++11
 
 SOURCES += \
     main.cpp \
-    dialog.cpp
+    dialog.cpp \
+    usershow.cpp
 
 HEADERS += \
-    dialog.h
+    dialog.h \
+    usershow.h
 
 FORMS += \
-    dialog.ui
+    dialog.ui \
+    usershow.ui
 
 include(./AudioApi/audioapi.pri)
-INCLUDEPATH += ./AudioApi/
+include(./VideoApi/videoapi.pri)
+INCLUDEPATH += ./audioapi/\
+               ./videoapi/
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

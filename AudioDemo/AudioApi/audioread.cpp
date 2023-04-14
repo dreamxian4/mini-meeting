@@ -54,6 +54,7 @@ void AudioRead::start()
 
 void AudioRead::pause()
 {
+    qDebug()<<"暂停";
     if(m_recordState==audio_state::_Record){
         //声音采集恢复, 可以将原 QAudioInput 对象回收, 重新再申请
         if(audio_in)

@@ -16,8 +16,8 @@
   <widget class="QPushButton" name="pb_start">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>180</y>
+     <x>120</x>
+     <y>40</y>
      <width>93</width>
      <height>28</height>
     </rect>
@@ -26,11 +26,11 @@
     <string>开始</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_2">
+  <widget class="QPushButton" name="pb_pause">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>220</y>
+     <x>240</x>
+     <y>40</y>
      <width>93</width>
      <height>28</height>
     </rect>
@@ -39,7 +39,67 @@
     <string>暂停</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="pb_start_2">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>40</y>
+     <width>93</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>开始</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pb_pause_2">
+   <property name="geometry">
+    <rect>
+     <x>560</x>
+     <y>40</y>
+     <width>93</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>暂停</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lb_video">
+   <property name="geometry">
+    <rect>
+     <x>350</x>
+     <y>40</y>
+     <width>91</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+   <property name="scaledContents">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="UserShow" name="wdg_videoShow" native="true">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>100</y>
+     <width>771</width>
+     <height>481</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>UserShow</class>
+   <extends>QWidget</extends>
+   <header>usershow.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
