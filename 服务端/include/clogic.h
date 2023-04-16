@@ -32,6 +32,8 @@ public:
     void JoinRoomRq(sock_fd clientfd, char*szbuf, int nlen);
     //设置个人信息
     void UserInfoRq(sock_fd clientfd, char*szbuf, int nlen);
+    //退出房间
+    void LeaveRoomRq(sock_fd clientfd, char*szbuf, int nlen);
 
     /*******************************************/
 

@@ -8,6 +8,7 @@ void CLogic::setNetPackMap()
     NetPackMap(DEF_PACK_CREATEROOM_RQ)  = &CLogic::CreateRoomRq;
     NetPackMap(DEF_PACK_JOINROOM_RQ)    = &CLogic::JoinRoomRq;
     NetPackMap(DEF_PACK_USER_INFO)      = &CLogic::UserInfoRq;
+    NetPackMap(DEF_PACK_LEAVEROOM_RQ)   = &CLogic::LeaveRoomRq;
 }
 
 void CLogic::GetUserInfoAndSend(int id){
@@ -203,4 +204,32 @@ void CLogic::UserInfoRq(sock_fd clientfd, char *szbuf, int nlen)
             rq->m_iconid,rq->m_szUser,rq->m_userFeeling,rq->m_UserID);
     m_sql->UpdataMysql(strsql);
     GetUserInfoAndSend(rq->m_UserID);
+}
+
+//退出房间
+void CLogic::LeaveRoomRq(sock_fd clientfd, char *szbuf, int nlen)
+{
+    printf("clientfd:%d LeaveRoomRq\n", clientfd);
+    //拆包
+    STRU_LEAVEROOM_RQ* rq=(STRU_LEAVEROOM_RQ*)szbuf;
+    list<int>lst;
+    if(!m_mapRoomIDToUserList.find(rq->m_RoomId,lst))return;
+    //根据房间id 获取列表 发给房间里每个人
+    for(auto ite=lst.begin();ite!=lst.end();){
+        int id=*ite;
+        if(id==rq->m_nUserId)ite=lst.erase(ite);//该人从列表移出
+        else{
+            //转发
+            UserInfo *user=nullptr;
+            if(!m_mapIdToUserInfo.find(id,user))continue;
+            SendData(user->m_sockfd,szbuf,nlen);
+            ite++;
+        }
+    }
+    //列表为空，map中移出
+    if(lst.size()==0){
+        m_mapRoomIDToUserList.erase(rq->m_RoomId);
+    }else{
+        m_mapRoomIDToUserList.insert(rq->m_RoomId,lst);
+    }
 }
