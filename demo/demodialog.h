@@ -29,7 +29,7 @@ signals:
 public:
     void closeEvent(QCloseEvent * event);
 
-private slots:
+public slots:
     void on_pb_min_clicked();
 
     void on_pb_close_clicked();
@@ -40,8 +40,10 @@ private slots:
 
     void on_pb_icon_clicked();
 
+    void slot_setPushButton_enable(bool flag);
+
 public slots:
-        void slot_setInfo(int id,QString name);
+    void slot_setInfo(int id,QString name);
 
 private:
     Ui::DemoDialog *ui;

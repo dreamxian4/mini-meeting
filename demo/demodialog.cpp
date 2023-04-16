@@ -72,3 +72,10 @@ void DemoDialog::on_pb_icon_clicked()
     Q_EMIT SIG_setUser();
 }
 
+
+void DemoDialog::slot_setPushButton_enable(bool flag)
+{
+    ui->pb_create->setEnabled(flag);
+    ui->pb_join->setEnabled(flag);
+}
+

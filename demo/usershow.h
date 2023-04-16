@@ -8,6 +8,7 @@ namespace Ui {
 class UserShow;
 }
 
+class CKernel;
 class UserShow : public QWidget
 {
     Q_OBJECT
@@ -23,6 +24,7 @@ private:
     Ui::UserShow *ui;
     int m_id;
     QString m_name;
+    friend class CKernel;
 };
 
 #endif // USERSHOW_H

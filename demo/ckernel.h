@@ -9,6 +9,7 @@
 #include"packdef.h"
 #include"roomdialog.h"
 #include<setuserdialog.h>
+#include<map>
 
 class CKernel;
 typedef void (CKernel::*PFUN)(unsigned int,char*,int);
@@ -52,6 +53,8 @@ public slots:
     void slot_DealroomMemberRq(unsigned int socket,char* buf,int nlen);
     //个人信息请求
     void slot_DealUserInfoRq(unsigned int socket,char* buf,int nlen);
+    //退出房间请求
+    void slot_DealLeaveRoomRq(unsigned int socket,char* buf,int nlen);
 
     //设置加入的房间
     void slot_setJoinedRoom(int m_RoomID);
@@ -67,6 +70,8 @@ public slots:
     void slot_setUser();
     //个人信息提交
     void slot_userSetCommit(int iconid,QString name,QString feeling);
+    //退出房间
+    void slot_quitRoom();
 
     //发送数据包
     bool SendData(unsigned int lSendIP , char* buf , int nlen);
@@ -82,6 +87,7 @@ private:
     int m_userid;//用户id
     int m_roomid;//房间id
     QString m_name;//用户名
+    std::map<int,UserShow*> m_mapIDToUserShow;//id--用户信息
 };
 
 

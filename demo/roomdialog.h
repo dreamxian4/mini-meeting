@@ -14,6 +14,10 @@ class RoomDialog : public CustomMoveDialog
 {
     Q_OBJECT
 
+signals:
+    void SIG_quitRoom();
+
+
 public:
     explicit RoomDialog(QWidget *parent = nullptr);
     ~RoomDialog();
@@ -33,6 +37,12 @@ private slots:
     void on_pb_hide_clicked();
 
     void on_pb_quit_clicked();
+
+    void on_cb_capture_clicked();
+
+    void on_cb_audio_clicked();
+
+    void on_cb_desk_clicked();
 
 private:
     Ui::RoomDialog *ui;
