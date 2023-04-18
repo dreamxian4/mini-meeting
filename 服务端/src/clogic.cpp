@@ -9,6 +9,8 @@ void CLogic::setNetPackMap()
     NetPackMap(DEF_PACK_JOINROOM_RQ)    = &CLogic::JoinRoomRq;
     NetPackMap(DEF_PACK_USER_INFO)      = &CLogic::UserInfoRq;
     NetPackMap(DEF_PACK_LEAVEROOM_RQ)   = &CLogic::LeaveRoomRq;
+    NetPackMap(DEF_PACK_AUDIO_FRAME)   = &CLogic::AudioFrame;
+    NetPackMap(DEF_PACK_VIDEO_FRAME)   = &CLogic::VideoFrame;
 }
 
 void CLogic::GetUserInfoAndSend(int id){
@@ -231,5 +233,55 @@ void CLogic::LeaveRoomRq(sock_fd clientfd, char *szbuf, int nlen)
         m_mapRoomIDToUserList.erase(rq->m_RoomId);
     }else{
         m_mapRoomIDToUserList.insert(rq->m_RoomId,lst);
+    }
+}
+
+//音频
+void CLogic::AudioFrame(sock_fd clientfd, char *szbuf, int nlen)
+{
+    printf("clientfd:%d AudioFrame\n", clientfd);
+    //拆包
+    char* tmp=szbuf;
+    //反序列化
+    tmp+=sizeof(int);
+    int userid=*(int*)tmp;//按照四个字节读
+    tmp+=sizeof(int);
+    int roomid=*(int*)tmp;
+    //roomid->列表
+    list<int>lst;
+    if(!m_mapRoomIDToUserList.find(roomid,lst))return;
+    for(auto ite=lst.begin();ite!=lst.end();ite++){
+        int id=*ite;
+        if(id!=userid){
+            //转发
+            UserInfo* user=nullptr;
+            if(!m_mapIdToUserInfo.find(userid,user))continue;
+            SendData(user->m_sockfd,szbuf,nlen);
+        }
+    }
+}
+
+//视频
+void CLogic::VideoFrame(sock_fd clientfd, char *szbuf, int nlen)
+{
+    printf("clientfd:%d VideoFrame\n", clientfd);
+    //拆包
+    char* tmp=szbuf;
+    //反序列化
+    tmp+=sizeof(int);
+    int userid=*(int*)tmp;//按照四个字节读
+    tmp+=sizeof(int);
+    int roomid=*(int*)tmp;
+    //roomid->列表
+    list<int>lst;
+    if(!m_mapRoomIDToUserList.find(roomid,lst))return;
+    for(auto ite=lst.begin();ite!=lst.end();ite++){
+        int id=*ite;
+        if(id!=userid){
+            //转发
+            UserInfo* user=nullptr;
+            if(!m_mapIdToUserInfo.find(userid,user))continue;
+            SendData(user->m_sockfd,szbuf,nlen);
+        }
     }
 }

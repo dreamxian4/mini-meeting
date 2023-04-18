@@ -371,6 +371,7 @@ struct STRU_VIDEO_REGISTER
 /// int type;
 /// int userId;
 /// int roomId;
+/// int hour;
 /// int min;
 /// int sec;
 /// int msec;

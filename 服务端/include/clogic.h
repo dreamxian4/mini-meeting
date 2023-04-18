@@ -34,6 +34,10 @@ public:
     void UserInfoRq(sock_fd clientfd, char*szbuf, int nlen);
     //退出房间
     void LeaveRoomRq(sock_fd clientfd, char*szbuf, int nlen);
+    //音频
+    void AudioFrame(sock_fd clientfd, char*szbuf, int nlen);
+    //视频
+    void VideoFrame(sock_fd clientfd, char*szbuf, int nlen);
 
     /*******************************************/
 
