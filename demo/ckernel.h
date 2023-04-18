@@ -10,6 +10,11 @@
 #include"roomdialog.h"
 #include<setuserdialog.h>
 #include<map>
+#include"audioread.h"
+#include"audiowrite.h"
+#include"videoread.h"
+#include"deskread.h"
+#include"usershow.h"
 
 class CKernel;
 typedef void (CKernel::*PFUN)(unsigned int,char*,int);
@@ -55,6 +60,10 @@ public slots:
     void slot_DealUserInfoRq(unsigned int socket,char* buf,int nlen);
     //退出房间请求
     void slot_DealLeaveRoomRq(unsigned int socket,char* buf,int nlen);
+    //音频请求
+    void slot_DealAudioFrameRq(unsigned int socket,char* buf,int nlen);
+    //视频请求
+    void slot_DealVideoFrameRq(unsigned int socket,char* buf,int nlen);
 
     //设置加入的房间
     void slot_setJoinedRoom(int m_RoomID);
@@ -72,6 +81,18 @@ public slots:
     void slot_userSetCommit(int iconid,QString name,QString feeling);
     //退出房间
     void slot_quitRoom();
+    //房间内麦克风、视频、桌面勾选框
+    void slot_audioOpen();
+    void slot_audioClose();
+    void slot_videoOpen();
+    void slot_videoClose();
+    void slot_deskOpen();
+    void slot_deskClose();
+
+    void slot_sendAudioFrame(QByteArray ba);
+    void slot_refreshVideoImage(QImage img);
+    void slot_refreshUserImage(int id,QImage &img);
+    void slot_sendVideoFrameData(QByteArray ba);
 
     //发送数据包
     bool SendData(unsigned int lSendIP , char* buf , int nlen);
@@ -87,7 +108,13 @@ private:
     int m_userid;//用户id
     int m_roomid;//房间id
     QString m_name;//用户名
-    std::map<int,UserShow*> m_mapIDToUserShow;//id--用户信息
+    //视频
+    VideoRead* m_videoRead;
+    std::map<int,UserShow*> m_mapIDToUserShow;//id--用户信息（每个用户的视频显示）
+    //音频
+    AudioRead* m_audioRead;
+    std::map<int,AudioWrite*> m_mapIDToAudioWrite;
+    //桌面deskread
 };
 
 

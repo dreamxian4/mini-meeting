@@ -73,6 +73,27 @@ CKernel::CKernel(QObject *parent) : QObject(parent),m_userid(0),m_roomid(0)
     connect(m_setUser,SIGNAL(SIG_userSetCommit(int,QString,QString)),
             this,SLOT(slot_userSetCommit(int,QString,QString)));
 
+
+    m_audioRead=new AudioRead;
+    m_videoRead=new VideoRead;
+    connect(m_audioRead,SIGNAL(SIG_audioFrame(QByteArray)),
+            this,SLOT(slot_sendAudioFrame(QByteArray)));
+    connect(m_videoRead,SIGNAL(SIG_videoFrame(QImage)),
+            this,SLOT(slot_refreshVideoImage(QImage)));
+    connect(m_videoRead,SIGNAL(SIG_videoFrameData(QByteArray)),
+            this,SLOT(slot_sendVideoFrameData(QByteArray)));
+    connect(m_room,SIGNAL(SIG_audioOpen()),
+            this,SLOT(slot_audioOpen()));
+    connect(m_room,SIGNAL(SIG_audioClose()),
+            this,SLOT(slot_audioClose()));
+    connect(m_room,SIGNAL(SIG_videoOpen()),
+            this,SLOT(slot_videoOpen()));
+    connect(m_room,SIGNAL(SIG_videoClose()),
+            this,SLOT(slot_videoClose()));
+    connect(m_room,SIGNAL(SIG_deskOpen()),
+            this,SLOT(slot_deskOpen()));
+    connect(m_room,SIGNAL(SIG_deskClose()),
+            this,SLOT(slot_deskClose()));
 }
 
 CKernel::~CKernel()
@@ -92,11 +113,6 @@ void CKernel::slot_destroy()
         delete m_login;
         m_login=NULL;
     }
-    if(m_client){
-        m_client->CloseNet();
-        delete m_client;
-        m_client=NULL;
-    }
     if(m_room){
         m_room->hide();
         delete m_room;
@@ -106,6 +122,19 @@ void CKernel::slot_destroy()
         m_setUser->hide();
         delete m_setUser;
         m_setUser=NULL;
+    }
+    if(m_audioRead){
+        delete m_audioRead;
+        m_audioRead=nullptr;
+    }
+    if(m_videoRead){
+        delete m_videoRead;
+        m_videoRead=nullptr;
+    }
+    if(m_client){
+        m_client->CloseNet();
+        delete m_client;
+        m_client=NULL;
     }
 }
 
@@ -151,6 +180,8 @@ void CKernel::setNetMap()
     netMap(DEF_PACK_ROOM_MEMBER)=&CKernel::slot_DealroomMemberRq;
     netMap(DEF_PACK_USER_INFO)=&CKernel::slot_DealUserInfoRq;
     netMap(DEF_PACK_LEAVEROOM_RQ)=&CKernel::slot_DealLeaveRoomRq;
+    netMap(DEF_PACK_AUDIO_FRAME)=&CKernel::slot_DealAudioFrameRq;
+    netMap(DEF_PACK_VIDEO_FRAME)=&CKernel::slot_DealVideoFrameRq;
 }
 
 //网络数据
@@ -232,8 +263,23 @@ void CKernel::slot_DealroomMemberRq(unsigned int socket, char *buf, int nlen)
     UserShow* user=new UserShow;
     user->slot_setInfo(rq->m_UserID,QString::fromStdString(rq->m_szUser));
 
+    if(m_mapIDToUserShow.count(rq->m_UserID)>0){
+        UserShow* old=m_mapIDToUserShow[rq->m_UserID];
+        m_mapIDToUserShow.erase(rq->m_UserID);
+        m_room->slot_removeUser(old);
+
+    }
     m_mapIDToUserShow[rq->m_UserID]=user;
     m_room->slot_addUser(user);
+
+    //创建音频对象
+    if(m_mapIDToAudioWrite.count(rq->m_UserID)>0){
+        AudioWrite* aw= m_mapIDToAudioWrite[rq->m_UserID];
+        m_mapIDToAudioWrite.erase(rq->m_UserID);
+        delete aw;
+    }
+    AudioWrite* aw=new AudioWrite;
+    m_mapIDToAudioWrite[rq->m_UserID]=aw;
 }
 
 //个人信息
@@ -258,8 +304,11 @@ void CKernel::slot_DealLeaveRoomRq(unsigned int socket, char *buf, int nlen)
     if(m_mapIDToUserShow.count(rq->m_nUserId)==0)return;
     UserShow* user=m_mapIDToUserShow[rq->m_nUserId];
 
-    m_room->slot_removeUser(user);
     m_mapIDToUserShow.erase(user->m_id);
+    m_room->slot_removeUser(user);
+
+    //map去掉这个人
+    m_mapIDToAudioWrite.erase(user->m_id);
 }
 
 //加入房间
@@ -380,14 +429,220 @@ void CKernel::slot_quitRoom()
     m_roomid=0;
     m_main->slot_setPushButton_enable(true);
 
-    //声音关闭
+    //声音关闭ui 后台
+    m_room->slot_setRoomClear();
 
     //视频回收
     for(auto ite=m_mapIDToUserShow.begin();ite!=m_mapIDToUserShow.end();ite++){
         UserShow* user=ite->second;
-        m_room->slot_removeUser(user);
         m_mapIDToUserShow.erase(user->m_id);
+        m_room->slot_removeUser(user);
     }
+
+    //音频播放的回收
+    for(auto ite=m_mapIDToAudioWrite.begin();ite!=m_mapIDToAudioWrite.end();ite++){
+        AudioWrite* user=ite->second;
+        m_mapIDToAudioWrite.erase(ite);
+        delete user;
+    }
+}
+
+void CKernel::slot_audioOpen()
+{
+    m_audioRead->start();
+}
+
+void CKernel::slot_audioClose()
+{
+    m_audioRead->pause();
+}
+
+void CKernel::slot_videoOpen()
+{
+    m_videoRead->start();
+}
+
+void CKernel::slot_videoClose()
+{
+    m_videoRead->pause();
+}
+
+void CKernel::slot_deskOpen()
+{
+
+}
+
+void CKernel::slot_deskClose()
+{
+
+}
+
+#include<QTime>
+void CKernel::slot_sendAudioFrame(QByteArray ba)
+{
+    //确定协议（服务器加个小时）
+    //协议头
+    //发送者id:服务器直到是谁发的，不给他转发
+    //房间号：找到转发给谁
+    //时间 小时 分钟 秒 毫秒 send延迟-》考虑丢弃帧，需要记录时间
+    //音频长度
+    //音频数据
+    int type=DEF_PACK_AUDIO_FRAME;
+    int userid=m_userid;
+    int roomid=m_roomid;
+    QTime tm=QTime::currentTime();
+    int hour=tm.hour();
+    int min=tm.minute();
+    int sec=tm.second();
+    int msec=tm.msec();
+    char* audioData=ba.data();
+    int len=ba.size();
+
+    //序列化数据
+    char* buf=new char[sizeof(int)*7+len];
+    char* tmp=buf;
+    *(int*)tmp=type;
+    tmp+=sizeof(int);
+    *(int*)tmp=userid;
+    tmp+=sizeof(int);
+    *(int*)tmp=roomid;
+    tmp+=sizeof(int);
+    *(int*)tmp=hour;
+    tmp+=sizeof(int);
+    *(int*)tmp=min;
+    tmp+=sizeof(int);
+    *(int*)tmp=sec;
+    tmp+=sizeof(int);
+    *(int*)tmp=msec;
+    tmp+=sizeof(int);
+    memcpy(tmp,audioData,len);
+    SendData(0,buf,sizeof(int)*7+len);
+    delete[] buf;
+}
+
+//刷新画面 主要使用在采集
+void CKernel::slot_refreshVideoImage(QImage img)
+{
+
+    slot_refreshUserImage(m_userid,img);
+}
+
+//显示某个用户
+void CKernel::slot_refreshUserImage(int id,QImage &img)
+{
+    //预览图 大图 显示
+    m_room->slot_setBigImage(id,img);
+    //列表图显示
+    if(m_mapIDToUserShow.count(id)>0){
+        UserShow* user=m_mapIDToUserShow[id];
+        user->slot_setImage(img);
+    }
+}
+
+void CKernel::slot_sendVideoFrameData(QByteArray ba)
+{
+    //确定协议（服务器加个小时）
+    //协议头
+    //发送者id:服务器直到是谁发的，不给他转发
+    //房间号：找到转发给谁
+    //时间 小时 分钟 秒 毫秒 send延迟-》考虑丢弃帧，需要记录时间
+    //音频长度
+    //音频数据
+    int type=DEF_PACK_VIDEO_FRAME;
+    int userid=m_userid;
+    int roomid=m_roomid;
+    QTime tm=QTime::currentTime();
+    int hour=tm.hour();
+    int min=tm.minute();
+    int sec=tm.second();
+    int msec=tm.msec();
+    char* audioData=ba.data();
+    int len=ba.size();
+
+    //序列化数据
+    char* buf=new char[sizeof(int)*7+len];
+    char* tmp=buf;
+    *(int*)tmp=type;
+    tmp+=sizeof(int);
+    *(int*)tmp=userid;
+    tmp+=sizeof(int);
+    *(int*)tmp=roomid;
+    tmp+=sizeof(int);
+    *(int*)tmp=hour;
+    tmp+=sizeof(int);
+    *(int*)tmp=min;
+    tmp+=sizeof(int);
+    *(int*)tmp=sec;
+    tmp+=sizeof(int);
+    *(int*)tmp=msec;
+    tmp+=sizeof(int);
+    memcpy(tmp,audioData,len);
+    SendData(0,buf,sizeof(int)*7+len);
+    delete[] buf;
+}
+
+void CKernel::slot_DealAudioFrameRq(unsigned int socket, char *buf, int nlen)
+{
+    //反序列化
+    int type;
+    int userid;
+    int roomid;
+    int hour;
+    int min;
+    int sec;
+    int msec;
+
+    //反序列化数据
+    char* tmp=buf;
+    type=*(int*)tmp;
+    tmp+=sizeof(int);
+    userid=*(int*)tmp;
+    tmp+=sizeof(int);
+    roomid=*(int*)tmp;
+    tmp+=sizeof(int);
+    tmp+=sizeof(int);
+    tmp+=sizeof(int);
+    tmp+=sizeof(int);
+    tmp+=sizeof(int);
+
+    int audiolen=nlen-7*sizeof(int);
+    //音频数据
+    QByteArray ba(tmp,audiolen);
+    if(m_mapIDToAudioWrite.count(userid)>0){
+        AudioWrite* aw=m_mapIDToAudioWrite[userid];
+        aw->slot_net_rx(ba);
+    }
+}
+
+void CKernel::slot_DealVideoFrameRq(unsigned int socket, char *buf, int nlen)
+{
+    //反序列化
+    int type;
+    int userid;
+    int roomid;
+    int hour;
+    int min;
+    int sec;
+    int msec;
+
+    //反序列化数据
+    char* tmp=buf;
+    type=*(int*)tmp;
+    tmp+=sizeof(int);
+    userid=*(int*)tmp;
+    tmp+=sizeof(int);
+    roomid=*(int*)tmp;
+    tmp+=sizeof(int);
+    tmp+=sizeof(int);
+    tmp+=sizeof(int);
+    tmp+=sizeof(int);
+    tmp+=sizeof(int);
+
+    int imagelen=nlen-7*sizeof(int);
+    //视频数据
+    QImage img;
+    img.loadFromData((uchar*)tmp,imagelen);
+    slot_refreshUserImage(userid,img);
 }
 
 //发送数据

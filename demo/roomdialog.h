@@ -16,6 +16,12 @@ class RoomDialog : public CustomMoveDialog
 
 signals:
     void SIG_quitRoom();
+    void SIG_audioOpen();
+    void SIG_audioClose();
+    void SIG_videoOpen();
+    void SIG_videoClose();
+    void SIG_deskOpen();
+    void SIG_deskClose();
 
 
 public:
@@ -26,6 +32,8 @@ public slots:
     void slot_setRoomID(int roomid);
     void slot_addUser(QWidget* user);
     void slot_removeUser(QWidget* user);
+    void slot_setRoomClear();
+    void slot_setBigImage(int userid,QImage img);
 
 private slots:
     void on_pb_min_clicked();

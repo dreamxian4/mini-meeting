@@ -4,11 +4,13 @@
 #include <QWidget>
 #include<QPaintEvent>
 
+class CKernel;
+class RoomDialog;
+
 namespace Ui {
 class UserShow;
 }
 
-class CKernel;
 class UserShow : public QWidget
 {
     Q_OBJECT
@@ -16,8 +18,9 @@ class UserShow : public QWidget
 public:
     explicit UserShow(QWidget *parent = nullptr);
     ~UserShow();
-
+public slots:
     void slot_setInfo(int id,QString name);
+    void slot_setImage(QImage img);
     //重写重绘事件
     void paintEvent(QPaintEvent *event);
 private:
@@ -25,6 +28,8 @@ private:
     int m_id;
     QString m_name;
     friend class CKernel;
+    friend class RoomDialog;
+    QImage m_img;
 };
 
 #endif // USERSHOW_H

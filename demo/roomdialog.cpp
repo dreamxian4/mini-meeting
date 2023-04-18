@@ -56,6 +56,25 @@ void RoomDialog::slot_removeUser(QWidget *user)
     delete user;
 }
 
+void RoomDialog::slot_setRoomClear()
+{
+    //设置ui
+    ui->cb_audio->setChecked(false);
+    ui->cb_capture->setChecked(false);
+    ui->cb_desk->setChecked(false);
+    //发信号
+    Q_EMIT SIG_audioClose();
+    Q_EMIT SIG_videoClose();
+    Q_EMIT SIG_deskClose();
+}
+
+void RoomDialog::slot_setBigImage(int userid, QImage img)
+{
+    if(ui->wdg_bigShow->m_id==userid){
+        ui->wdg_bigShow->slot_setImage(img);
+    }
+}
+
 void RoomDialog::on_pb_min_clicked()
 {
     this->slot_showMin();
@@ -96,13 +115,13 @@ void RoomDialog::on_pb_quit_clicked()
 //音频勾选框
 void RoomDialog::on_cb_audio_clicked()
 {
-    if(ui->cb_audio->isChecked()){//判断是否被勾选
-        ui->cb_audio->setChecked(false);
+    if(!ui->cb_audio->isChecked()){//判断是否被勾选
         //发送信号 RoomDialog ->ckernel(audio video) 关闭
         //RoomDialog->sig->ckernel->slot->audio 开关
+        Q_EMIT SIG_audioClose();
     }else{
-        ui->cb_audio->setChecked(true);
         //发送开启信号
+        Q_EMIT SIG_audioOpen();
     }
 }
 
@@ -110,28 +129,32 @@ void RoomDialog::on_cb_audio_clicked()
 //视频勾选框
 void RoomDialog::on_cb_capture_clicked()
 {
-    if(ui->cb_capture->isChecked()){
-        ui->cb_capture->setChecked(false);
+    if(!ui->cb_capture->isChecked()){
         //发信号
         //摄像头关闭
+        Q_EMIT SIG_videoClose();
     }else{
-        ui->cb_capture->setChecked(true);
+        ui->cb_desk->setChecked(false);
         //发信号
         //摄像头开启 桌面关闭
+        Q_EMIT SIG_deskClose();
+        Q_EMIT SIG_videoOpen();
     }
 }
 
 //桌面采集
 void RoomDialog::on_cb_desk_clicked()
 {
-    if(ui->cb_desk->isChecked()){
-        ui->cb_desk->setChecked(false);
+    if(!ui->cb_desk->isChecked()){
         //发信号
         //桌面采集关闭
+        Q_EMIT SIG_deskClose();
     }else{
         ui->cb_desk->setChecked(true);
         //发信号
         //桌面采集开启 摄像头关闭
+        Q_EMIT SIG_videoClose();
+        Q_EMIT SIG_deskOpen();
     }
 }
 
