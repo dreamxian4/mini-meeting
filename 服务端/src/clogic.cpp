@@ -264,7 +264,6 @@ void CLogic::AudioFrame(sock_fd clientfd, char *szbuf, int nlen)
 //视频
 void CLogic::VideoFrame(sock_fd clientfd, char *szbuf, int nlen)
 {
-    printf("clientfd:%d VideoFrame\n", clientfd);
     //拆包
     char* tmp=szbuf;
     //反序列化
@@ -280,7 +279,8 @@ void CLogic::VideoFrame(sock_fd clientfd, char *szbuf, int nlen)
         if(id!=userid){
             //转发
             UserInfo* user=nullptr;
-            if(!m_mapIdToUserInfo.find(userid,user))continue;
+            if(!m_mapIdToUserInfo.find(id,user))continue;
+            printf("fasong\n");
             SendData(user->m_sockfd,szbuf,nlen);
         }
     }
