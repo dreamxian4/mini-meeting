@@ -68,11 +68,18 @@ void RoomDialog::slot_setRoomClear()
     Q_EMIT SIG_deskClose();
 }
 
-void RoomDialog::slot_setBigImage(int userid, QImage img)
+void RoomDialog::slot_setBigImage(int userid, QImage &img)
 {
     if(ui->wdg_bigShow->m_id==userid){
         ui->wdg_bigShow->slot_setImage(img);
     }
+}
+
+void RoomDialog::slot_setBigImageInfo(int userid, QString name)
+{
+    ui->wdg_bigShow->slot_setInfo(userid,name);
+    //也可以不通过信号发送id和名字
+//    UserShow* user=(UserShow*)QObject::sender();//可以获取到信号发送者的对象，根据该对象可以获取其成员
 }
 
 void RoomDialog::on_pb_min_clicked()

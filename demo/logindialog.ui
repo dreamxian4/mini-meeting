@@ -72,6 +72,9 @@
        <height>31</height>
       </rect>
      </property>
+     <property name="text">
+      <string>1</string>
+     </property>
      <property name="echoMode">
       <enum>QLineEdit::Password</enum>
      </property>
@@ -148,6 +151,9 @@
        <width>231</width>
        <height>31</height>
       </rect>
+     </property>
+     <property name="text">
+      <string>13412341234</string>
      </property>
      <property name="echoMode">
       <enum>QLineEdit::Normal</enum>

@@ -76,12 +76,17 @@ CKernel::CKernel(QObject *parent) : QObject(parent),m_userid(0),m_roomid(0)
 
     m_audioRead=new AudioRead;
     m_videoRead=new VideoRead;
-    connect(m_audioRead,SIGNAL(SIG_audioFrame(QByteArray)),
-            this,SLOT(slot_sendAudioFrame(QByteArray)));
-    connect(m_videoRead,SIGNAL(SIG_videoFrame(QImage)),
-            this,SLOT(slot_refreshVideoImage(QImage)));
-    connect(m_videoRead,SIGNAL(SIG_videoFrameData(QByteArray)),
-            this,SLOT(slot_sendVideoFrameData(QByteArray)));
+    m_deskRead=new DeskRead;
+    connect(m_audioRead,SIGNAL(SIG_audioFrame(QByteArray&)),
+            this,SLOT(slot_sendAudioFrame(QByteArray&)));
+    connect(m_videoRead,SIGNAL(SIG_videoFrame(QImage&)),
+            this,SLOT(slot_refreshVideoImage(QImage&)));
+    connect(m_videoRead,SIGNAL(SIG_videoFrameData(QByteArray&)),
+            this,SLOT(slot_sendVideoFrameData(QByteArray&)));
+    connect(m_deskRead,SIGNAL(SIG_screenFrame(QImage&)),
+            this,SLOT(slot_refreshVideoImage(QImage&)));
+    connect(m_deskRead,SIGNAL(SIG_screenFrameData(QByteArray&)),
+            this,SLOT(slot_sendVideoFrameData(QByteArray&)));
     connect(m_room,SIGNAL(SIG_audioOpen()),
             this,SLOT(slot_audioOpen()));
     connect(m_room,SIGNAL(SIG_audioClose()),
@@ -186,8 +191,7 @@ void CKernel::setNetMap()
 
 //网络数据
 //处理数据
-void CKernel::slot_DealData(unsigned int socket, char *buf, int nlen)
-{
+void CKernel::slot_DealData(unsigned int socket, char *buf, int nlen){
     int type=*(int*)buf;
     if(type>=_DEF_PACK_BASE&&type<_DEF_PACK_BASE+_DEF_PROTOCOL_COUNT){
         PFUN p=netMap(type);
@@ -262,6 +266,8 @@ void CKernel::slot_DealroomMemberRq(unsigned int socket, char *buf, int nlen)
     STRU_ROOM_MEMBER_RQ* rq=(STRU_ROOM_MEMBER_RQ*)buf;
     UserShow* user=new UserShow;
     user->slot_setInfo(rq->m_UserID,QString::fromStdString(rq->m_szUser));
+    connect(user,SIGNAL(SIG_userClicked(int,QString)),
+            m_room,SLOT(slot_setBigImageInfo(int,QString)));
 
     if(m_mapIDToUserShow.count(rq->m_UserID)>0){
         UserShow* old=m_mapIDToUserShow[rq->m_UserID];
@@ -323,6 +329,8 @@ void CKernel::slot_setJoinedRoom(int m_RoomID){
     //添加自己到房间
     UserShow* user=new UserShow;
     user->slot_setInfo(m_userid,m_name);
+    connect(user,SIGNAL(SIG_userClicked(int,QString)),
+            m_room,SLOT(slot_setBigImageInfo(int,QString)));
     m_mapIDToUserShow[m_userid]=user;
     m_room->slot_addUser(user);
 }
@@ -433,16 +441,16 @@ void CKernel::slot_quitRoom()
     m_room->slot_setRoomClear();
 
     //视频回收
-    for(auto ite=m_mapIDToUserShow.begin();ite!=m_mapIDToUserShow.end();ite++){
+    for(auto ite=m_mapIDToUserShow.begin();ite!=m_mapIDToUserShow.end();){
         UserShow* user=ite->second;
-        m_mapIDToUserShow.erase(user->m_id);
+        ite=m_mapIDToUserShow.erase(ite);//迭代器失效
         m_room->slot_removeUser(user);
     }
 
     //音频播放的回收
-    for(auto ite=m_mapIDToAudioWrite.begin();ite!=m_mapIDToAudioWrite.end();ite++){
+    for(auto ite=m_mapIDToAudioWrite.begin();ite!=m_mapIDToAudioWrite.end();){
         AudioWrite* user=ite->second;
-        m_mapIDToAudioWrite.erase(ite);
+        ite=m_mapIDToAudioWrite.erase(ite);
         delete user;
     }
 }
@@ -469,16 +477,16 @@ void CKernel::slot_videoClose()
 
 void CKernel::slot_deskOpen()
 {
-
+    m_deskRead->start();
 }
 
 void CKernel::slot_deskClose()
 {
-
+    m_deskRead->pause();
 }
 
 #include<QTime>
-void CKernel::slot_sendAudioFrame(QByteArray ba)
+void CKernel::slot_sendAudioFrame(QByteArray &ba)
 {
     //确定协议（服务器加个小时）
     //协议头
@@ -521,7 +529,7 @@ void CKernel::slot_sendAudioFrame(QByteArray ba)
 }
 
 //刷新画面 主要使用在采集
-void CKernel::slot_refreshVideoImage(QImage img)
+void CKernel::slot_refreshVideoImage(QImage &img)
 {
 
     slot_refreshUserImage(m_userid,img);
@@ -539,7 +547,7 @@ void CKernel::slot_refreshUserImage(int id,QImage &img)
     }
 }
 
-void CKernel::slot_sendVideoFrameData(QByteArray ba)
+void CKernel::slot_sendVideoFrameData(QByteArray &ba)
 {
     //确定协议（服务器加个小时）
     //协议头

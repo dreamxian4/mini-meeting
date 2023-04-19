@@ -49,10 +49,11 @@ void VideoRead::slot_readMore()
                    char*)frame.data,
                   frame.cols,frame.rows,QImage::Format_RGB888);
     //转化为大小更小的图片 等比例缩放
-    //image = image.scaled( IMAGE_WIDTH,IMAGE_HEIGHT, Qt::KeepAspectRatio );
+    image = image.scaled( IMAGE_WIDTH,IMAGE_HEIGHT, Qt::KeepAspectRatio );
     //信号形式发送
     Q_EMIT SIG_videoFrame( image );
 
+//    image = image.scaled( IMAGE_WIDTH,IMAGE_HEIGHT, Qt::KeepAspectRatio );
     //图片转换为 QByteArray 进行发送
     //压缩图片从 RGB24 格式压缩到 JPEG 格式, 发送出去
     QByteArray ba;

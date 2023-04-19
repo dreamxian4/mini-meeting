@@ -17,7 +17,7 @@ public:
 
 signals:
     //定时采集的数据,以信号的形式发送
-    void SIG_audioFrame(QByteArray ba);
+    void SIG_audioFrame(QByteArray &ba);
 
 public slots:
     //开始采集

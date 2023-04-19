@@ -33,7 +33,8 @@ public slots:
     void slot_addUser(QWidget* user);
     void slot_removeUser(QWidget* user);
     void slot_setRoomClear();
-    void slot_setBigImage(int userid,QImage img);
+    void slot_setBigImage(int userid,QImage &img);
+    void slot_setBigImageInfo(int userid,QString name);
 
 private slots:
     void on_pb_min_clicked();
@@ -57,5 +58,8 @@ private:
     //用于用户列表的垂直布局
     QVBoxLayout* m_userLayout;
 };
+
+//预览大图 点击User 发信号 id name 根据这个设置大图
+//刷新图片会根据id 刷新图片
 
 #endif // ROOMDIALOG_H

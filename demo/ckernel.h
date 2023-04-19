@@ -89,10 +89,10 @@ public slots:
     void slot_deskOpen();
     void slot_deskClose();
 
-    void slot_sendAudioFrame(QByteArray ba);
-    void slot_refreshVideoImage(QImage img);
+    void slot_sendAudioFrame(QByteArray &ba);
+    void slot_refreshVideoImage(QImage &img);
     void slot_refreshUserImage(int id,QImage &img);
-    void slot_sendVideoFrameData(QByteArray ba);
+    void slot_sendVideoFrameData(QByteArray &ba);
 
     //发送数据包
     bool SendData(unsigned int lSendIP , char* buf , int nlen);
@@ -115,6 +115,7 @@ private:
     AudioRead* m_audioRead;
     std::map<int,AudioWrite*> m_mapIDToAudioWrite;
     //桌面deskread
+    DeskRead* m_deskRead;
 };
 
 

@@ -8,8 +8,8 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui(new Ui::LoginDialog)
 {
     ui->setupUi(this);
-    on_pb_clear_register_clicked();
-    on_pb_clear_clicked();
+//    on_pb_clear_register_clicked();
+//    on_pb_clear_clicked();
 }
 
 LoginDialog::~LoginDialog()

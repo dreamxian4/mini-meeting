@@ -24,7 +24,7 @@ void UserShow::slot_setInfo(int id, QString name)
     ui->lb_name->setText(QString("用户：%1").arg(m_name));
 }
 
-void UserShow::slot_setImage(QImage img)
+void UserShow::slot_setImage(QImage &img)
 {
     m_img=img;
 //    update();//会触发绘图事件
@@ -52,5 +52,11 @@ void UserShow::paintEvent(QPaintEvent *event)
     y = ui->lb_name->height() + y/2;
     painter.drawPixmap( QPoint(x,y) , pixmap );
     painter.end();
+    event->accept();
+}
+
+void UserShow::mousePressEvent(QMouseEvent *event)
+{
+    Q_EMIT SIG_userClicked(m_id,m_name);
     event->accept();
 }

@@ -16,8 +16,8 @@ public:
     ~VideoRead();
 
 signals:
-    void SIG_videoFrame(QImage img);
-    void SIG_videoFrameData(QByteArray bt);
+    void SIG_videoFrame(QImage &img);
+    void SIG_videoFrameData(QByteArray &bt);
 public slots:
     void start();
     void pause();

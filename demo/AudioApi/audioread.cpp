@@ -5,6 +5,9 @@
 
 AudioRead::AudioRead(QObject *parent) : QObject(parent)
 {
+    m_timer=nullptr;
+    audio_in=nullptr;
+    myBuffer_in=nullptr;
     //声卡采样格式
     format.setSampleRate(8000);
     format.setChannelCount(1);
@@ -34,9 +37,13 @@ AudioRead::~AudioRead()
     {
         audio_in->stop();
         delete audio_in;
+        audio_in=nullptr;
     }
-    m_timer->stop();
-    delete m_timer;
+    if(m_timer){
+        m_timer->stop();
+        delete m_timer;
+        m_timer=nullptr;
+    }
 }
 
 void AudioRead::start()
@@ -61,9 +68,13 @@ void AudioRead::pause()
         {
             audio_in->stop();
             delete audio_in;
+            audio_in=nullptr;
         }
-        m_timer->stop();
-        delete m_timer;
+        if(m_timer){
+            m_timer->stop();
+            delete m_timer;
+            m_timer=nullptr;
+        }
         //为了更好的管理状态, 需要添加状态位, 避免出现 (开始->开始 暂停->暂停 状态的切换)
         //初始化状态为结束 , 开始状态为 recording , 暂停状态为 pausing , 先判断再执行开始和暂停.
     }
