@@ -11,6 +11,8 @@ void CLogic::setNetPackMap()
     NetPackMap(DEF_PACK_LEAVEROOM_RQ)   = &CLogic::LeaveRoomRq;
     NetPackMap(DEF_PACK_AUDIO_FRAME)   = &CLogic::AudioFrame;
     NetPackMap(DEF_PACK_VIDEO_FRAME)   = &CLogic::VideoFrame;
+    NetPackMap(DEF_PACK_AUDIO_REGISTER)   = &CLogic::AudioRegister;
+    NetPackMap(DEF_PACK_VIDEO_REGISTER)   = &CLogic::VideoRegister;
 }
 
 void CLogic::GetUserInfoAndSend(int id){
@@ -239,7 +241,7 @@ void CLogic::LeaveRoomRq(sock_fd clientfd, char *szbuf, int nlen)
 //音频
 void CLogic::AudioFrame(sock_fd clientfd, char *szbuf, int nlen)
 {
-    printf("clientfd:%d AudioFrame\n", clientfd);
+//    printf("clientfd:%d AudioFrame\n", clientfd);
     //拆包
     char* tmp=szbuf;
     //反序列化
@@ -255,8 +257,8 @@ void CLogic::AudioFrame(sock_fd clientfd, char *szbuf, int nlen)
         if(id!=userid){
             //转发
             UserInfo* user=nullptr;
-            if(!m_mapIdToUserInfo.find(userid,user))continue;
-            SendData(user->m_sockfd,szbuf,nlen);
+            if(!m_mapIdToUserInfo.find(id,user))continue;
+            SendData(user->m_audiofd,szbuf,nlen);
         }
     }
 }
@@ -280,8 +282,27 @@ void CLogic::VideoFrame(sock_fd clientfd, char *szbuf, int nlen)
             //转发
             UserInfo* user=nullptr;
             if(!m_mapIdToUserInfo.find(id,user))continue;
-            printf("fasong\n");
-            SendData(user->m_sockfd,szbuf,nlen);
+            SendData(user->m_videofd,szbuf,nlen);
         }
     }
+}
+
+void CLogic::AudioRegister(sock_fd clientfd, char *szbuf, int nlen)
+{
+    printf("clientfd:%d AudioRegister\n", clientfd);
+    //拆包 取id 找到userinfo 写入fd
+    STRU_AUDIO_REGISTER* rq=(STRU_AUDIO_REGISTER*)szbuf;
+    UserInfo* user=nullptr;
+    if(!m_mapIdToUserInfo.find(rq->m_userid,user))return;
+    user->m_audiofd=clientfd;
+}
+
+void CLogic::VideoRegister(sock_fd clientfd, char *szbuf, int nlen)
+{
+    printf("clientfd:%d VideoRegister\n", clientfd);
+    //拆包 取id 找到userinfo 写入fd
+    STRU_VIDEO_REGISTER* rq=(STRU_VIDEO_REGISTER*)szbuf;
+    UserInfo* user=nullptr;
+    if(!m_mapIdToUserInfo.find(rq->m_userid,user))return;
+    user->m_videofd=clientfd;
 }

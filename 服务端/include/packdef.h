@@ -298,8 +298,8 @@ typedef struct UserInfo
          m_id = 0;
          m_roomid = 0;
          memset(m_userName, 0 , MAX_SIZE);
-//        m_videofd = 0;
-//        m_audiofd = 0;
+        m_videofd = 0;
+        m_audiofd = 0;
     }
 //    struct bufferevent*  m_sockfd;
     int m_sockfd;
@@ -307,8 +307,8 @@ typedef struct UserInfo
     int  m_roomid;//方便下线的时候从房间移出
     char m_userName[MAX_SIZE];
 
-//    int  m_videofd;
-//    int  m_audiofd;
+    int  m_videofd;
+    int  m_audiofd;
 
 }UserInfo;
 

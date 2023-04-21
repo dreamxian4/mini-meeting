@@ -38,6 +38,8 @@ public:
     void AudioFrame(sock_fd clientfd, char*szbuf, int nlen);
     //视频
     void VideoFrame(sock_fd clientfd, char*szbuf, int nlen);
+    void AudioRegister(sock_fd clientfd, char*szbuf, int nlen);
+    void VideoRegister(sock_fd clientfd, char*szbuf, int nlen);
 
     /*******************************************/
 
