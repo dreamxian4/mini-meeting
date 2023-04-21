@@ -5,6 +5,7 @@
 #include"imgproc/imgproc.hpp"
 #include"core/core.hpp"
 #include"opencv2\imgproc\types_c.h"
+#include <QObject>
 
 using namespace cv;
 //帧率 1秒15帧

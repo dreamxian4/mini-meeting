@@ -239,6 +239,28 @@ typedef struct STRU_USER_INFO_RQ
 
 }STRU_USER_INFO_RQ;
 
+//注册音频
+struct STRU_AUDIO_REGISTER
+{
+    STRU_AUDIO_REGISTER():m_nType(DEF_PACK_AUDIO_REGISTER){
+        m_userid = 0;
+    }
+
+    PackType m_nType;   //包类型
+    int m_userid;
+};
+
+//注册视频
+struct STRU_VIDEO_REGISTER
+{
+    STRU_VIDEO_REGISTER():m_nType(DEF_PACK_VIDEO_REGISTER){
+        m_userid = 0;
+    }
+
+    PackType m_nType;   //包类型
+    int m_userid;
+};
+
 // 数据库
 /*
 	表1 用户表 id->唯一标识 tel  password  name  iconid   feeling 也可以写成两张表 登录和用户信息

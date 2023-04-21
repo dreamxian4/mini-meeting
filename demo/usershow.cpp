@@ -4,15 +4,22 @@
 #include<QPainter>
 #include<qDebug>
 
+
 UserShow::UserShow(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::UserShow),m_id(0)
 {
     ui->setupUi(this);
+    m_defaultImg.load(":/tx/26.png");
+    connect(&m_timer,SIGNAL(timeout()),
+            this,SLOT(slot_checkTimeOut()));
+    m_timer.start(1000);
+    slot_setImage(m_defaultImg);
 }
 
 UserShow::~UserShow()
 {
+    m_timer.stop();
     delete ui;
 }
 
@@ -26,6 +33,7 @@ void UserShow::slot_setInfo(int id, QString name)
 
 void UserShow::slot_setImage(QImage &img)
 {
+    m_lastTime=QTime::currentTime();
     m_img=img;
 //    update();//会触发绘图事件
     repaint();//会触发绘图事件
@@ -59,4 +67,11 @@ void UserShow::mousePressEvent(QMouseEvent *event)
 {
     Q_EMIT SIG_userClicked(m_id,m_name);
     event->accept();
+}
+
+void UserShow::slot_checkTimeOut()
+{
+    if(m_lastTime.secsTo(QTime::currentTime())>5){
+        slot_setImage(m_defaultImg);
+    }
 }

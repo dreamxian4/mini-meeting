@@ -60,7 +60,7 @@ color: rgb(255, 255, 255);</string>
       </size>
      </property>
      <property name="text">
-      <string>用户名：张三</string>
+      <string>欢迎来到本会议</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

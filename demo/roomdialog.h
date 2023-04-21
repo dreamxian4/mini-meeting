@@ -22,7 +22,7 @@ signals:
     void SIG_videoClose();
     void SIG_deskOpen();
     void SIG_deskClose();
-
+    void SIG_setFunnyPic(int);
 
 public:
     explicit RoomDialog(QWidget *parent = nullptr);
@@ -52,6 +52,8 @@ private slots:
     void on_cb_audio_clicked();
 
     void on_cb_desk_clicked();
+
+    void on_cbx_moji_currentIndexChanged(int index);
 
 private:
     Ui::RoomDialog *ui;

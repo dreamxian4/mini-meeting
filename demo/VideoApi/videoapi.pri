@@ -1,10 +1,12 @@
 HEADERS += \
     $$PWD/deskread.h \
+    $$PWD/myfacedefect.h \
     $$PWD/video_common.h \
     $$PWD/videoread.h
 
 SOURCES += \
     $$PWD/deskread.cpp \
+    $$PWD/myfacedefect.cpp \
     $$PWD/videoread.cpp
 
 #使用 opencv4.2.0

@@ -15,7 +15,8 @@ SOURCES += \
     demodialog.cpp \
     roomdialog.cpp \
     setuserdialog.cpp \
-    usershow.cpp
+    usershow.cpp \
+    workthread.cpp
 
 HEADERS += \
     ckernel.h \
@@ -23,7 +24,8 @@ HEADERS += \
     logindialog.h \
     roomdialog.h \
     setuserdialog.h \
-    usershow.h
+    usershow.h \
+    workthread.h
 
 FORMS += \
     demodialog.ui \

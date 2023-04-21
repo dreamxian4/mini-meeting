@@ -15,9 +15,19 @@
 #include"videoread.h"
 #include"deskread.h"
 #include"usershow.h"
+#include"workthread.h"
 
 class CKernel;
 typedef void (CKernel::*PFUN)(unsigned int,char*,int);
+
+//为了优化发送导致的卡顿，可以采用多线程，发送在工作者线程执行
+class SendThread:public WorkThread{
+    Q_OBJECT
+public:
+
+public slots:
+    void slot_threadSendData(unsigned int socket,char* buf,int nlen);
+};
 
 class CKernel : public QObject
 {
@@ -28,7 +38,7 @@ private:
     CKernel(const CKernel& c){}
 
 signals:
-
+    void SIG_sendVideoFrame(unsigned int socket,char* buf,int nlen);
 public:
     static CKernel* getCkernel(){
         static CKernel c;
@@ -93,10 +103,14 @@ public slots:
     void slot_refreshVideoImage(QImage &img);
     void slot_refreshUserImage(int id,QImage &img);
     void slot_sendVideoFrameData(QByteArray &ba);
+    void slot_setFunnyPic(int index);
 
     //发送数据包
-    bool SendData(unsigned int lSendIP , char* buf , int nlen);
-
+    void SendData(unsigned int lSendIP , char* buf , int nlen);
+    //视频发送
+    void SendAudioData(unsigned int lSendIP , char* buf , int nlen);
+    //音频发送
+    void SendVideoData(unsigned int lSendIP , char* buf , int nlen);
 private:
     PFUN m_netMap[_DEF_PROTOCOL_COUNT];//协议映射表
     DemoDialog* m_main;//主窗口
@@ -116,7 +130,20 @@ private:
     std::map<int,AudioWrite*> m_mapIDToAudioWrite;
     //桌面deskread
     DeskRead* m_deskRead;
+    QSharedPointer<SendThread>m_sendVideo;
+
+    //视频和音频单独的tcp
+    INetMediator* m_tcpAV[2];//0音频 1视频
 };
 
+//当视频和音频同时传输时，音频会卡顿，视频会由较大延迟
+//优化方案：
+//视频帧的协议包里面有时间戳，与当前时间（绝对时间）进行比对，如果发送发现延迟大（大于200ms），就丢弃
+//延迟大的原因：发送是在单独线程里面用槽函数写的，时排队进行的，前一个包有一定延迟，就会影响到下一个包
+//让其延迟执行槽函数
+//这样音频和视频都和当前的绝对时间偏差小于200ms，那么就同步了
 
+//因为视频流量较大，音频就卡顿，考虑视频和音频用两个不同的tcp传输
+//什么时候与服务器建立视频和音频的tcp连接？
+//登录之后，发数据包，完成tcp的连接和记录
 #endif // CKERNEL_H

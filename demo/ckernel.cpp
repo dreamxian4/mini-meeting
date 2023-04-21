@@ -25,11 +25,33 @@ static std::string GetMD5(QString str){
 }
 
 CKernel::CKernel(QObject *parent) : QObject(parent),m_userid(0),m_roomid(0)
+  ,m_sendVideo(new SendThread)
 {
+    qDebug()<<"main:"<<QThread::currentThreadId();
     initConfig();
     setNetMap();
 
     m_client=new TcpClientMediator;
+    //av初始化 连接
+    for(int i=0;i<2;i++){
+        m_tcpAV[i]=new TcpClientMediator;
+        connect(m_tcpAV[i],SIGNAL(SIG_ReadyData(unsigned int,char*,int)),
+                this,SLOT(slot_DealData(unsigned int,char*,int)));
+
+        if(!m_tcpAV[i]->OpenNet(m_serverIp.toStdString().c_str(),8080)){
+            QMessageBox::about(this->m_login,"提示","服务器连接失败~~~");
+            exit(0);
+        }
+    }
+
+    m_login=new LoginDialog;
+    m_login->show();
+    m_main=new DemoDialog;
+    m_room=new RoomDialog;
+    m_setUser=new SetUserDialog;
+    m_audioRead=new AudioRead;
+    m_videoRead=new VideoRead;
+    m_deskRead=new DeskRead;
     //打开网络
     if(!m_client->OpenNet(m_serverIp.toStdString().c_str(),8080)){
         QMessageBox::about(this->m_login,"提示","服务器连接失败~~~");
@@ -39,10 +61,6 @@ CKernel::CKernel(QObject *parent) : QObject(parent),m_userid(0),m_roomid(0)
     connect(m_client,SIGNAL(SIG_ReadyData(unsigned int,char*,int)),
             this,SLOT(slot_DealData(unsigned int,char*,int)));
 
-
-    m_login=new LoginDialog;
-
-    m_login->show();
     //连接关闭信号和销毁槽
     connect(m_login,SIGNAL(SIG_close()),
             this,SLOT(slot_destroy()));
@@ -51,9 +69,6 @@ CKernel::CKernel(QObject *parent) : QObject(parent),m_userid(0),m_roomid(0)
     connect(m_login,SIGNAL(SIG_registerCommit(QString,QString)),
             this,SLOT(slot_registerCommit(QString,QString)));
 
-
-
-    m_main=new DemoDialog;
     //连接关闭信号和销毁槽
     connect(m_main,SIGNAL(SIG_close()),
             this,SLOT(slot_destroy()));
@@ -65,18 +80,14 @@ CKernel::CKernel(QObject *parent) : QObject(parent),m_userid(0),m_roomid(0)
             this,SLOT(slot_setUser()));
 
 
-    m_room=new RoomDialog;
+
     connect(m_room,SIGNAL(SIG_quitRoom()),
             this,SLOT(slot_quitRoom()));
 
-    m_setUser=new SetUserDialog;
+
     connect(m_setUser,SIGNAL(SIG_userSetCommit(int,QString,QString)),
             this,SLOT(slot_userSetCommit(int,QString,QString)));
 
-
-    m_audioRead=new AudioRead;
-    m_videoRead=new VideoRead;
-    m_deskRead=new DeskRead;
     connect(m_audioRead,SIGNAL(SIG_audioFrame(QByteArray&)),
             this,SLOT(slot_sendAudioFrame(QByteArray&)));
     connect(m_videoRead,SIGNAL(SIG_videoFrame(QImage&)),
@@ -99,6 +110,11 @@ CKernel::CKernel(QObject *parent) : QObject(parent),m_userid(0),m_roomid(0)
             this,SLOT(slot_deskOpen()));
     connect(m_room,SIGNAL(SIG_deskClose()),
             this,SLOT(slot_deskClose()));
+    connect(m_room,SIGNAL(SIG_setFunnyPic(int)),
+            this,SLOT(slot_setFunnyPic(int)));
+
+    connect(this,SIGNAL(SIG_sendVideoFrame(uint,char*,int)),
+            m_sendVideo.get(),SLOT(slot_threadSendData(uint,char*,int)));
 }
 
 CKernel::~CKernel()
@@ -218,6 +234,15 @@ void CKernel::slot_DealLoginRs(unsigned int socket, char *buf, int nlen)
         m_userid=rs->userid;
         m_login->hide();
         m_main->showNormal();
+
+        //注册视频和音频
+        STRU_AUDIO_REGISTER audiorq;
+        audiorq.m_userid=m_userid;
+        SendAudioData(0,(char*)&audiorq,sizeof(audiorq));
+
+        STRU_VIDEO_REGISTER videorq;
+        videorq.m_userid=m_userid;
+        SendVideoData(0,(char*)&videorq,sizeof(videorq));
         break;
     }
 }
@@ -524,7 +549,8 @@ void CKernel::slot_sendAudioFrame(QByteArray &ba)
     *(int*)tmp=msec;
     tmp+=sizeof(int);
     memcpy(tmp,audioData,len);
-    SendData(0,buf,sizeof(int)*7+len);
+//    SendData(0,buf,sizeof(int)*7+len);
+    SendAudioData(0,buf,sizeof(int)*7+len);
     delete[] buf;
 }
 
@@ -585,8 +611,15 @@ void CKernel::slot_sendVideoFrameData(QByteArray &ba)
     *(int*)tmp=msec;
     tmp+=sizeof(int);
     memcpy(tmp,audioData,len);
-    SendData(0,buf,sizeof(int)*7+len);
-    delete[] buf;
+//    SendData(0,buf,sizeof(int)*7+len);
+//    delete[] buf;
+    //替换为发送信号
+    Q_EMIT SIG_sendVideoFrame(0,buf,sizeof(int)*7+len);
+}
+
+void CKernel::slot_setFunnyPic(int index)
+{
+    m_videoRead->setFunnyPic(index);
 }
 
 void CKernel::slot_DealAudioFrameRq(unsigned int socket, char *buf, int nlen)
@@ -654,7 +687,46 @@ void CKernel::slot_DealVideoFrameRq(unsigned int socket, char *buf, int nlen)
 }
 
 //发送数据
-bool CKernel::SendData(unsigned int lSendIP, char *buf, int nlen)
+void CKernel::SendData(unsigned int lSendIP, char *buf, int nlen)
 {
-    return m_client->SendData(lSendIP,buf,nlen);
+    m_client->SendData(lSendIP,buf,nlen);
+}
+
+void CKernel::SendAudioData(unsigned int lSendIP, char *buf, int nlen)
+{
+    m_tcpAV[0]->SendData(lSendIP,buf,nlen);
+}
+
+void CKernel::SendVideoData(unsigned int lSendIP, char *buf, int nlen)
+{
+    m_tcpAV[1]->SendData(lSendIP,buf,nlen);
+}
+
+void SendThread::slot_threadSendData(unsigned int socket, char *buf, int nlen)
+{
+//    qDebug()<<"send:"<<QThread::currentThreadId();
+    //判断是否延迟 丢包
+
+    char* tmp=buf;
+    //类型
+    tmp+=sizeof(int);
+    //用户id
+    tmp+=sizeof(int);
+    //房间id
+    tmp+=sizeof(int);
+    int hour=*(int*)tmp;
+    tmp+=sizeof(int);
+    int min=*(int*)tmp;
+    tmp+=sizeof(int);
+    int sec=*(int*)tmp;
+    tmp+=sizeof(int);
+    int msec=*(int*)tmp;
+    tmp+=sizeof(int);
+    QTime tm(hour,min,sec,msec);
+
+    //判断延迟超过200ms，丢弃包
+    if(tm.msecsTo(QTime::currentTime())<=200)
+//        CKernel::getCkernel()->SendData(socket,buf,nlen);
+        CKernel::getCkernel()->SendVideoData(socket,buf,nlen);
+    delete[] buf;
 }

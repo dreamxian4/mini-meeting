@@ -157,11 +157,19 @@ void RoomDialog::on_cb_desk_clicked()
         //桌面采集关闭
         Q_EMIT SIG_deskClose();
     }else{
-        ui->cb_desk->setChecked(true);
+        ui->cb_capture->setChecked(false);
         //发信号
         //桌面采集开启 摄像头关闭
         Q_EMIT SIG_videoClose();
         Q_EMIT SIG_deskOpen();
+    }
+}
+
+
+void RoomDialog::on_cbx_moji_currentIndexChanged(int index)
+{
+    if(index==1||index==2){
+        Q_EMIT SIG_setFunnyPic(index);
     }
 }
 
