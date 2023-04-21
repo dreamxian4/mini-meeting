@@ -28,6 +28,19 @@ AudioRead::AudioRead(QObject *parent) : QObject(parent)
     //设置质量为 8(15kbps)
     int tmp = SPEEX_QUALITY;
     speex_encoder_ctl(Enc_State,SPEEX_SET_QUALITY,&tmp);
+
+#ifdef USE_VAD
+    //vadcreate
+    if( 0 != WebRtcVad_Create( &handle ) )
+    {
+        qDebug() << "vad create fail";
+    }
+    //vad init
+    if( 0 != WebRtcVad_Init(handle) )
+    {
+        qDebug() << "vad init fail";
+    }
+#endif
 }
 
 AudioRead::~AudioRead()
@@ -44,6 +57,10 @@ AudioRead::~AudioRead()
         delete m_timer;
         m_timer=nullptr;
     }
+#ifdef USE_VAD
+    WebRtcVad_Free(handle);
+#endif
+
 }
 
 void AudioRead::start()
@@ -61,7 +78,6 @@ void AudioRead::start()
 
 void AudioRead::pause()
 {
-    qDebug()<<"暂停";
     if(m_recordState==audio_state::_Record){
         //声音采集恢复, 可以将原 QAudioInput 对象回收, 重新再申请
         if(audio_in)
@@ -110,7 +126,6 @@ void AudioRead::slot_readMore()
     }
     //从音频设备对应的缓冲区读取640字节
     qint64 l = myBuffer_in->read(m_buffer.data(), 640);
-    qDebug()<<"l sizes:"<<l;
     QByteArray frame;
     //frame.append(m_buffer.data(),640);
     /////////////////////////////////////////////////
@@ -121,6 +136,26 @@ void AudioRead::slot_readMore()
     char buf[800] = {0};
     char* pInData = (char*)m_buffer.data() ;
     memcpy( buf , pInData , 640);
+
+    //静音检测
+    //静音检测之后再编码
+#ifdef USE_VAD
+    int nCount = 0;
+    //每次操作 320 字节
+    for( int i = 0 ; i < 640 ; i += 320 )
+    {
+        char* tmp = buf + i;
+        //vad 返回值 -1 错误 0 静音 1 有声
+        if( 0 == WebRtcVad_Process( handle , 8000 , (int16_t*)tmp,
+                                    160 ) )
+        {
+            // 静音 清零这块空间
+            memset( tmp , 0 , 320 );
+            nCount++;
+        }
+    }
+    if( nCount >= 2) return; //检测静音不发送
+#endif
 
     //speex窄带宽模式 8kHz 每次编码320字节 大端存储 数据
     //PCM采集是小端的
@@ -151,7 +186,6 @@ void AudioRead::slot_readMore()
         speex_encode(Enc_State,input_frame1,&bits_enc);
         nbytes = speex_bits_write(&bits_enc,bytes,800);
         frame.append(bytes,nbytes);
-        qDebug() << "nbytes = " << frame.size();
     }
 
     //以信号的形式发送

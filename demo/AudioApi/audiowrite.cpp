@@ -32,6 +32,7 @@ AudioWrite::~AudioWrite()
 
 void AudioWrite::slot_net_rx(QByteArray ba)
 {
+    qDebug()<<"收到";
 #ifndef USE_SPEEX
     myBuffer_out->write( ba.data() , 640 );
 #else

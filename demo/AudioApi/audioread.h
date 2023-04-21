@@ -5,6 +5,7 @@
 #include<QTimer>
 #include"audio_common.h"
 
+
 class AudioRead : public QObject
 {
     Q_OBJECT
@@ -36,6 +37,8 @@ private:
     //SPEEX 相关变量
     SpeexBits bits_enc;
     void *Enc_State;
+    //webrtc vad 静音检测
+    VadInst *handle;
 };
 
 #endif // AUDIOREAD_H
